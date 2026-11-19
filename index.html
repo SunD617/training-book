@@ -58,6 +58,12 @@ input,select,textarea{width:100%;padding:11px;border:1px solid var(--line);borde
 .modal{display:none;position:fixed;inset:0;background:#17231e77;z-index:30;align-items:flex-end;justify-content:center}.modal.show{display:flex}
 .sheet{width:100%;max-width:760px;max-height:88vh;overflow:auto;background:var(--bg);border-radius:20px 20px 0 0;padding:17px 16px calc(24px + env(safe-area-inset-bottom))}
 .sheethead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.close{border:0;background:#e9eeea;border-radius:50%;width:32px;height:32px;font-size:18px}
+/* V16.2 替代动作内嵌播放器 */
+.v16-alt-video{width:100%;aspect-ratio:16/9;margin-top:9px;border-radius:9px;overflow:hidden;background:#101010}
+.v16-alt-video iframe{display:block;width:100%;height:100%;border:0}
+.v16-alt-video-caption{font-size:10px;line-height:1.5;color:var(--muted);margin-top:6px}
+.v16-alt-source{display:inline-block;margin-top:7px;font-size:10px;font-weight:700;color:var(--green);text-decoration:none}
+.v16-alt-card{overflow:hidden}
 /* V16 国内动作视频与替代动作 */
 .v16-video-wrap,.v16-video-fallback{margin:12px 0;padding:11px;border:1px solid var(--line);border-radius:13px;background:#f8faf8}
 .v16-video-head,.v16-video-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:11px}
@@ -634,17 +640,55 @@ const exerciseAlternatives={
  '死虫式':[['脚跟点地死虫式','完整伸展难以保持腰背稳定时降低难度'],['单腿抬放','先练单侧下肢移动与核心稳定']],
  'Pallof Press':[['弹力带 Pallof Press','没有拉力器时使用，固定点需牢靠'],['跪姿抗旋转推','站姿不稳定时降低重心练习抗旋转']]
 };
-function biliSearchUrl(name){return 'https://search.bilibili.com/all?keyword='+encodeURIComponent(name+' 动作教学');}
+// 每个替代动作对应明确的 B 站视频。部分变式使用同一动作模式的基础教学，并在卡片中注明器材/姿势差异。
+const alternativeVideoMap={
+ '臀桥':{bvid:'BV1No4y1h7NH',title:'自重臀桥动作教学',note:'视频合集内含自重臀桥章节'},
+ '史密斯臀推':{bvid:'BV1rb4y1k7qE',title:'臀部训练与髋伸动作示范',note:'同类髋伸动作参考，器械轨迹略有不同'},
+ '哑铃罗马尼亚硬拉':{bvid:'BV1u84y1q795',title:'哑铃罗马尼亚硬拉',note:'对应动作教学'},
+ '壶铃罗马尼亚硬拉':{bvid:'BV1E5411m7Yx',title:'罗马尼亚硬拉动作讲解',note:'髋铰链动作模式参考，器械略有不同'},
+ '四点跪姿后踢腿':{bvid:'BV1v64y147bu',title:'钢线后踢腿与臀部训练示范',note:'同类髋伸动作参考，器械略有不同'},
+ '弹力带后踢腿':{bvid:'BV1v64y147bu',title:'钢线后踢腿与臀部训练示范',note:'同类髋伸动作参考，阻力来源略有不同'},
+ '弹力带侧向行走':{bvid:'BV1sb4y1N7nu',title:'肩臀训练动作合集',note:'合集参考；弹力带侧向行走需按文字提示完成'},
+ '侧卧髋外展':{bvid:'BV1No4y1h7NH',title:'侧卧髋外展动作教学',note:'视频合集内含侧卧髋外展章节'},
+ '哑铃卧推':{bvid:'BV1mD421J7o3',title:'哑铃平板卧推详解',note:'对应动作教学'},
+ '墙面/跪姿俯卧撑':{bvid:'BV1cD421n711',title:'俯卧撑详解',note:'先从墙面或跪姿降低难度'},
+ '上斜器械推胸':{bvid:'BV1D7tLe9En1',title:'史密斯上斜卧推详解',note:'同类上斜推举轨迹参考，器械略有不同'},
+ '低角度史密斯推胸':{bvid:'BV1D7tLe9En1',title:'史密斯上斜卧推详解',note:'视频合集内含史密斯上斜卧推章节'},
+ '绳索侧平举':{bvid:'BV1Qj411h7tS',title:'绳索侧平举保姆级教程',note:'对应动作教学'},
+ '器械侧平举':{bvid:'BV1sb4y1N7nu',title:'器械侧平举动作讲解',note:'视频合集内含器械侧平举章节'},
+ '弹力带下压':{bvid:'BV1pD421H7zw',title:'仰卧臂屈伸详解',note:'肱三头肌伸肘动作参考，动作形式不同'},
+ '哑铃过顶臂屈伸':{bvid:'BV1Cz421i79n',title:'对握哑铃仰卧臂屈伸详解',note:'肱三头肌伸肘动作参考，手臂角度不同'},
+ '臀推 Hip Thrust':{bvid:'BV1rb4y1k7qE',title:'臀推与臀部训练示范',note:'髋伸动作参考'},
+ '弹力带臀桥':{bvid:'BV1No4y1h7NH',title:'自重臀桥动作教学',note:'基础臀桥动作参考，弹力带为额外阻力'},
+ '扶支撑反向弓步':{bvid:'BV1Et42187nB',title:'箭步蹲详解',note:'反向弓步动作模式参考，练习时可扶稳固支撑'},
+ '原地分腿蹲':{bvid:'BV1Et42187nB',title:'箭步蹲详解',note:'分腿蹲动作模式参考'},
+ '俯卧腿弯举':{bvid:'BV1Pa411L7Qy',title:'俯卧腿弯举动作示范',note:'视频合集内含俯卧腿弯举章节'},
+ '弹力带腿弯举':{bvid:'BV1Pa411L7Qy',title:'俯卧腿弯举动作示范',note:'膝屈动作模式参考，弹力带阻力不同'},
+ '中立握高位下拉':{bvid:'BV1d3SnBuEcy',title:'高位下拉动作教学',note:'高位下拉动作模式参考，握把不同'},
+ '辅助引体向上':{bvid:'BV1D7tLe9En1',title:'引体向上详解',note:'垂直拉动作模式参考；使用辅助器械降低负荷'},
+ '胸托划船':{bvid:'BV1Bh4y1V7ea',title:'练背动作教学',note:'背部水平拉动作参考，胸托支撑方式略有不同'},
+ '单臂哑铃划船':{bvid:'BV1D7tLe9En1',title:'哑铃划船动作详解',note:'视频合集内含哑铃划船章节'},
+ '绳索反向飞鸟':{bvid:'BV1sb4y1N7nu',title:'肩部后束训练动作讲解',note:'视频合集内含后束动作章节'},
+ '弹力带拉开':{bvid:'BV1sb4y1N7nu',title:'肩部后束训练动作讲解',note:'肩后束动作模式参考，器材不同'},
+ '脚跟点地死虫式':{bvid:'BV1pr421n7Wq',title:'核心训练详解',note:'核心稳定动作参考，按本页简化幅度练习'},
+ '单腿抬放':{bvid:'BV1pr421n7Wq',title:'核心训练详解',note:'核心稳定动作参考，按本页单腿动作步骤练习'},
+ '弹力带 Pallof Press':{bvid:'BV15LhG6zEwY',title:'Pallof Press动作教学',note:'对应动作教学'},
+ '跪姿抗旋转推':{bvid:'BV15LhG6zEwY',title:'Pallof Press动作教学',note:'抗旋转动作基础参考，跪姿为降低重心的变式'}
+};
 function biliVideoUrl(bvid){return 'https://www.bilibili.com/video/'+bvid+'/';}
 function renderBiliTeaching(name){
  const v=exerciseVideoMap[name];
  if(v)return `<div class="v16-video-wrap"><div class="v16-video-head"><b>国内视频教学 · B站</b><span class="pill">已匹配具体视频</span></div><div class="video-frame"><iframe src="https://player.bilibili.com/player.html?bvid=${v.bvid}&autoplay=0&danmaku=0" title="${v.title}" loading="lazy" allowfullscreen="true" referrerpolicy="no-referrer-when-downgrade"></iframe></div><div class="v16-video-foot"><span>${v.title}</span><a href="${biliVideoUrl(v.bvid)}" target="_blank" rel="noopener">若无法播放，打开B站原视频 ↗</a></div></div>`;
- return `<div class="v16-video-fallback"><div><b>国内视频教学 · B站</b><p>该动作暂未核验到稳定的单条视频，先打开对应动作的B站搜索结果，选择完整、清晰的动作教学。</p></div><a class="btn light" href="${biliSearchUrl(name)}" target="_blank" rel="noopener">搜索「${name}」教学视频 ↗</a></div>`;
+ return `<div class="v16-video-fallback"><div><b>国内视频教学 · B站</b><p>该动作暂未核验到稳定的单条视频，暂不放入不确定的视频。</p></div></div>`;
 }
 function renderAlternativeCards(name){
  const list=exerciseAlternatives[name]||[];
  if(!list.length)return '<div class="notice">当前动作暂无已配置的替代动作。</div>';
- return list.map(([alt,reason])=>`<div class="v16-alt-card"><div class="row between"><b>${alt}</b><span class="pill">替代动作</span></div><p>${reason}</p><div class="v16-alt-actions"><a class="btn light" href="${biliSearchUrl(alt)}" target="_blank" rel="noopener">查看动作演示视频 ↗</a></div></div>`).join('');
+ return list.map(([alt,reason])=>{
+  const v=alternativeVideoMap[alt];
+  if(!v)return `<div class="v16-alt-card"><b>${alt}</b><p>${reason}</p><div class="notice">该动作暂无核验过的独立视频，暂不嵌入不匹配的示范。</div></div>`;
+  return `<div class="v16-alt-card"><div class="row between"><b>${alt}</b><span class="pill">替代动作</span></div><p>${reason}</p><div class="v16-alt-video"><iframe src="https://player.bilibili.com/player.html?bvid=${v.bvid}&autoplay=0&danmaku=0" title="${v.title}" loading="lazy" allowfullscreen="true" referrerpolicy="no-referrer-when-downgrade"></iframe></div><div class="v16-alt-video-caption">${v.title} · ${v.note}</div><a class="v16-alt-source" href="${biliVideoUrl(v.bvid)}" target="_blank" rel="noopener">播放器无法使用？打开原视频 ↗</a></div>`;
+ }).join('');
 }
 function renderPlanTeaching(){
  const p=db.plans.find(x=>x.id===window.currentTeachingPlan);if(!p)return;
@@ -662,9 +706,9 @@ function renderPlanTeaching(){
    <div class="exercise-section-label">01 · 准备姿势</div><div class="exercise-steps"><div class="exercise-step"><span class="exercise-step-num">✓</span><span>${t.setup}</span></div></div>
    <div class="exercise-section-label">02 · 动作步骤</div><div class="exercise-steps">${steps}</div>
    <div class="exercise-two-col"><div class="exercise-info-box"><b>呼吸节奏</b><span>${t.breath}</span></div><div class="exercise-info-box"><b>常见错误</b><span>${t.errors}</span></div></div>
-   <div class="exercise-section-label">03 · 可选替代动作（每个均附国内视频演示入口）</div>
+   <div class="exercise-section-label">03 · 可选替代动作（直接嵌入国内视频）</div>
    <div class="v16-alternatives">${renderAlternativeCards(name)}</div>
-   <div class="exercise-teach-actions"><span class="exercise-video-note">视频来源统一为哔哩哔哩；未核验单条视频的动作使用对应搜索入口，不伪造视频编号。</span><div class="exercise-step-nav"><button class="btn light" onclick="selectTeachingExercise(Math.max(0,window.currentTeachingIndex-1))" ${window.currentTeachingIndex===0?'disabled':''}>上一个</button><button class="btn" onclick="selectTeachingExercise(Math.min(${p.items.length-1},window.currentTeachingIndex+1))" ${window.currentTeachingIndex===p.items.length-1?'disabled':''}>下一个动作</button></div></div>
+   <div class="exercise-teach-actions"><span class="exercise-video-note">替代动作视频直接嵌入本页；个别视频为同类动作模式参考，器材或姿势差异已注明。</span><div class="exercise-step-nav"><button class="btn light" onclick="selectTeachingExercise(Math.max(0,window.currentTeachingIndex-1))" ${window.currentTeachingIndex===0?'disabled':''}>上一个</button><button class="btn" onclick="selectTeachingExercise(Math.min(${p.items.length-1},window.currentTeachingIndex+1))" ${window.currentTeachingIndex===p.items.length-1?'disabled':''}>下一个动作</button></div></div>
   </div>
  </div><div class="notice" style="margin-top:13px">先用轻重量熟悉动作。动作质量优先于重量；若出现疼痛、头晕或异常不适，立即停止训练。替代动作不是医疗建议，身体不适时先暂停并遵循医生意见。</div>`;
 }
