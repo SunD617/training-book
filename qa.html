@@ -53,6 +53,24 @@ document.getElementById('run').onclick=async()=>{
   d=JSON.parse(localStorage.getItem(KEY)||'{}');
   checks.push(['刷新后数据保留',!!(d.logs&&d.logs.length===1&&d.sessions&&d.sessions.length===1),'刷新后仍可读取历史记录']);
   checks.push(['正式数据隔离',localStorage.getItem('trainingBook_v3')===productionBefore,'正式数据与测试数据完全隔离']);
+  // V16 动作教学验收：检查四套计划中的主动作教学及替代动作视频入口
+  let teachingOk=true,teachingCount=0,alternativeCount=0;
+  for(const pid of ['A','B','C','D']){
+   w.showPlan(pid);await wait(80);
+   const names=[...w.document.querySelectorAll('#modalBody .exercise-pick')];
+   for(let i=0;i<names.length;i++){
+    w.selectTeachingExercise(i);await wait(30);
+    const body=w.document.getElementById('modalBody');
+    const alts=body.querySelectorAll('.v16-alt-card');
+    const video=body.querySelector('.v16-video-wrap,.v16-video-fallback');
+    const hasDomesticLinks=[...body.querySelectorAll('a[href*="bilibili.com"]')].length>=1;
+    if(!video||alts.length<2||!hasDomesticLinks)teachingOk=false;
+    teachingCount++;alternativeCount+=alts.length;
+   }
+  }
+  w.closeModal();
+  checks.push(['V16 主动作国内视频入口',teachingOk,teachingCount+'个主动作均有B站教学入口']);
+  checks.push(['V16 替代动作教学入口',teachingOk&&alternativeCount>=teachingCount*2,alternativeCount+'个替代动作均配置B站演示入口']);
   checks.forEach(x=>line(x[0],x[1],x[2]));
   const n=checks.filter(x=>x[1]).length;
   line('总结果',n===checks.length,n+'/'+checks.length+' 项通过');
