@@ -58,6 +58,42 @@ input,select,textarea{width:100%;padding:11px;border:1px solid var(--line);borde
 .modal{display:none;position:fixed;inset:0;background:#17231e77;z-index:30;align-items:flex-end;justify-content:center}.modal.show{display:flex}
 .sheet{width:100%;max-width:760px;max-height:88vh;overflow:auto;background:var(--bg);border-radius:20px 20px 0 0;padding:17px 16px calc(24px + env(safe-area-inset-bottom))}
 .sheethead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.close{border:0;background:#e9eeea;border-radius:50%;width:32px;height:32px;font-size:18px}
+/* V15.4 原生动作教学界面 */
+.sheet.exercise-sheet{max-width:900px;max-height:90vh;padding:20px;overflow:auto}
+.exercise-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.exercise-modal-kicker{font-size:11px;letter-spacing:.08em;color:var(--green);font-weight:800}
+.exercise-modal-title{font-size:22px;font-weight:850;margin:3px 0}
+.exercise-modal-sub{font-size:12px;color:var(--muted)}
+.exercise-teach-layout{display:grid;grid-template-columns:minmax(180px, .72fr) minmax(0,1.6fr);gap:14px}
+.exercise-picker{display:grid;gap:6px;align-content:start}
+.exercise-pick{display:flex;align-items:center;gap:9px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px;color:var(--text);min-width:0}
+.exercise-pick.active{border-color:#548368;background:#edf4ef;box-shadow:inset 3px 0 #3e7655}
+.exercise-pick-num{display:grid;place-items:center;flex:none;width:26px;height:26px;border-radius:9px;background:#edf2ee;color:#426b52;font-size:12px;font-weight:800}
+.exercise-pick-name{font-size:12px;font-weight:750;line-height:1.35}
+.exercise-pick-meta{font-size:10px;color:var(--muted);margin-top:3px}
+.exercise-teach-main{min-width:0;border:1px solid var(--line);border-radius:16px;padding:15px;background:var(--surface)}
+.exercise-teach-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.exercise-teach-name{font-size:19px;font-weight:850}
+.exercise-prescription{font-size:11px;color:var(--green);font-weight:800;white-space:nowrap;background:#edf4ef;border-radius:20px;padding:7px 9px}
+.exercise-media-stage{margin:13px 0;border-radius:13px;min-height:155px;display:grid;place-items:center;background:linear-gradient(145deg,#f0f4f0,#e7ede8);overflow:hidden}
+.exercise-media-stage img{display:block;width:100%;max-height:270px;object-fit:contain;background:#fff}
+.exercise-media-placeholder{padding:22px;text-align:center;color:#52675a}
+.exercise-media-placeholder .figure{font-size:38px;display:block;margin-bottom:8px}
+.exercise-media-placeholder b{font-size:12px}
+.exercise-media-placeholder p{font-size:11px;line-height:1.6;margin:5px 0 0;color:#718077}
+.exercise-section-label{font-size:11px;font-weight:850;color:var(--green);margin:13px 0 7px;letter-spacing:.04em}
+.exercise-steps{display:grid;gap:7px}
+.exercise-step{display:flex;gap:9px;align-items:flex-start;font-size:12px;line-height:1.55;color:var(--text)}
+.exercise-step-num{display:grid;place-items:center;flex:none;width:22px;height:22px;border-radius:8px;background:#eaf1eb;color:#326447;font-size:11px;font-weight:850}
+.exercise-two-col{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.exercise-info-box{background:#f4f6f4;border-radius:11px;padding:10px}
+.exercise-info-box b{display:block;font-size:11px;margin-bottom:4px}
+.exercise-info-box span{font-size:11px;line-height:1.5;color:#68766d}
+.exercise-teach-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:14px;flex-wrap:wrap}
+.exercise-teach-actions .btn{font-size:12px}
+.exercise-video-note{font-size:10px;color:var(--muted);line-height:1.5}
+.exercise-step-nav{display:flex;gap:7px}
+@media(max-width:620px){.sheet.exercise-sheet{padding:16px 13px 22px;max-height:92vh}.exercise-teach-layout{grid-template-columns:1fr;gap:10px}.exercise-picker{display:flex;overflow-x:auto;padding:2px 1px 7px;scroll-snap-type:x mandatory}.exercise-pick{min-width:145px;scroll-snap-align:start}.exercise-teach-main{padding:12px}.exercise-modal-title{font-size:19px}.exercise-media-stage{min-height:130px}.exercise-two-col{grid-template-columns:1fr 1fr}}
 .timer{display:flex;align-items:center;justify-content:space-between;background:#edf3ee;padding:14px;border-radius:14px;margin:12px 0}.timer strong{font-size:30px;color:var(--green);font-variant-numeric:tabular-nums}
 canvas{width:100%;height:160px}
 @media(min-width:600px){.app{padding-left:24px;padding-right:24px}.sheet{border-radius:20px}}
@@ -124,7 +160,7 @@ canvas{width:100%;height:160px}
 <body>
 <div class="app">
 <header><div class="logo">训练簿<small>TRAIN & LIFE</small></div><div class="date" id="dateLabel"></div></header>
-<div class="pwa-status"><span><b>训练簿</b> · <small id="appVersionLabel">V15.3.1 免登录教学版</small></span><span id="updateStatus">版本检查中…</span></div>
+<div class="pwa-status"><span><b>训练簿</b> · <small id="appVersionLabel">V15.4 原生动作教学版</small></span><span id="updateStatus">版本检查中…</span></div>
 <div class="test-mode-banner" id="testModeBanner">测试环境：所有记录与正式训练簿隔离，清理测试数据不会影响正式数据。</div>
 
 
@@ -323,7 +359,7 @@ canvas{width:100%;height:160px}
  <button data-tab="life" onclick="go('life')"><span class="ico">◒</span>生活</button>
  <button data-tab="me" onclick="go('me')"><span class="ico">◯</span>我的</button>
 </nav>
-<div class="modal" id="modal" onclick="if(event.target.id==='modal')closeModal()"><div class="sheet"><div class="sheethead"><h3 id="modalTitle">训练详情</h3><button class="close" onclick="closeModal()">×</button></div><div id="modalBody"></div></div></div>
+<div class="modal" id="modal" onclick="if(event.target.id==='modal')closeModal()"><div class="sheet exercise-sheet"><div class="sheethead"><h3 id="modalTitle">训练详情</h3><button class="close" onclick="closeModal()">×</button></div><div id="modalBody"></div></div></div>
 
 <div class="reminder-toast" id="reminderToast"></div>
 <script>
@@ -497,21 +533,60 @@ function mediaForExercise(name){
  const q=encodeURIComponent(name+' 动作教学 正确姿势');
  return { ...m, search:'https://www.youtube.com/results?search_query='+q };
 }
-function showPlan(id){
- let p=db.plans.find(x=>x.id===id);
- document.getElementById('modalTitle').textContent=p.name+' · 训练计划';
- document.getElementById('modalBody').innerHTML=`<div class="sub">${p.focus} · ${p.duration}</div>
- <div class="session-hint">建议强度：RPE 6–7，保留约3–4次余力。每组动作质量优先于重量。</div>
- ${p.items.map((x,i)=>{
-  const m=mediaForExercise(x[0]);
-  const visual=m.gif?`<div class="video-frame"><img src="${m.gif}" alt="${x[0]}动态动作演示" loading="lazy" style="width:100%;height:100%;object-fit:contain;background:#fff"></div><div class="tiny muted">动态演示来源：${m.source}</div>`:
-   m.guide?`<a class="btn light" style="display:inline-flex;margin:8px 0" href="${m.guide}" target="_blank" rel="noopener">↗ 打开免登录动作教学页</a><div class="tiny muted">教学来源：${m.source}</div>`:
-   `<div class="motion-guide"><b>动作分解</b><div class="motion-steps">${(m.steps||['先摆好稳定姿势','沿可控制的轨迹完成发力','缓慢还原，保持自然呼吸']).map((s,j)=>`<div class="motion-step"><span>${j+1}</span>${s}</div>`).join('')}</div></div>`;
-  return `<div class="exercise exercise-detail"><div class="exicon">${i+1}</div><div class="grow"><div class="exname">${x[0]}</div><div class="exmeta">${x[4]||''} · 组间休息 ${x[3]} · ${x[1]}组 × ${x[2]}</div><div class="exercise-tip">${exerciseCue(x[0])}</div>${visual}<a class="video-link" href="${m.guide||m.search}" target="_blank" rel="noopener">↗ ${m.guide?'打开完整动作教学':'搜索动作教学'}</a></div></div>`;
- }).join('')}
- <div class="notice" style="margin-top:12px">先观看演示，再用轻重量熟悉动作轨迹。出现疼痛或异常不适时停止；动作质量优先于重量。</div>`;
+const exerciseTeaching={
+ '臀推 Hip Thrust':{muscle:'臀大肌',setup:'上背肩胛下缘靠在训练凳边缘，双脚与髋同宽踩稳。',steps:['下巴轻收，视线朝前，肋骨不要向上翻','脚跟与全脚掌均匀发力，将髋部抬起','到顶端时收紧臀部，让肩、髋、膝大致成一直线','控制髋部下降，保持张力，不要直接放松到底'],breath:'抬起时呼气；下降时吸气。',errors:'腰部过度反弓、脚离臀太远或太近、用惯性弹起。',alternative:'臀桥、器械臀推。',video:'guide'},
+ '罗马尼亚硬拉':{muscle:'臀大肌、腘绳肌',setup:'双脚髋宽站立，膝盖微屈，哑铃或杠铃贴近大腿。',steps:['先轻微屈膝，保持脊柱自然稳定','臀部向后推，让重量沿大腿向下滑','下降到大腿后侧有明显拉伸、背部仍能稳定的位置','臀部向前发力站起，重量始终贴近身体'],breath:'下放吸气；站起呼气。',errors:'蹲得太深、弓背、重量远离身体、用腰向后仰完成动作。',alternative:'哑铃罗马尼亚硬拉、绳索拉臀。',gif:'https://planworkouts.com/videos/0085-wQ2c4XD.gif',source:'PlanWorkouts 动态演示'},
+ '绳索后踢腿':{muscle:'臀大肌',setup:'将脚踝绑带固定在拉力器低位，双手扶稳器械。',steps:['身体微微前倾，腹部收紧，骨盆保持朝前','腿从髋部向后伸，不需要抬得很高','顶端短暂停顿感受臀部收缩','缓慢回到起点，保持配重不完全落下'],breath:'向后伸腿呼气；还原吸气。',errors:'塌腰、转动骨盆、甩腿借力或追求过大幅度。',alternative:'跪姿后踢腿、臀桥。'},
+ '髋外展机':{muscle:'臀中肌、臀小肌',setup:'坐稳靠背，外侧大腿贴住软垫，双脚自然放置。',steps:['躯干和骨盆保持稳定','膝盖向两侧打开，动作幅度以可控为准','打开后短暂停顿','缓慢合回，不让配重片撞击'],breath:'打开时呼气；合回时吸气。',errors:'身体前后晃动、弹震借力、为了幅度而扭转骨盆。',alternative:'弹力带侧向行走、侧卧髋外展。'},
+ '坐姿器械推胸':{muscle:'胸大肌、肱三头肌、前三角肌',setup:'调整座椅高度，使把手大致位于胸部中段。',steps:['背部贴靠垫，肩胛自然稳定，双脚踩地','向前推把手，手腕保持中立','接近伸直但不猛烈锁死肘关节','缓慢回到起点，保持肩部稳定'],breath:'推起呼气；回程吸气。',errors:'耸肩、手腕折弯、肘部过度外展、回程失控。',alternative:'哑铃卧推、俯卧撑。'},
+ '上斜哑铃推胸':{muscle:'胸大肌上部、肱三头肌、前三角肌',setup:'训练凳调至约15–30度，双脚踩地，哑铃置于胸上方两侧。',steps:['肩胛轻收并稳定在凳面','哑铃沿胸上方两侧缓慢下降','前臂大致保持垂直，推起至胸上方','全程控制重量，不要互相猛烈碰撞'],breath:'推起呼气；下降吸气。',errors:'凳子角度过高、肩前侧不适仍强行下放、哑铃轨迹失控。',alternative:'上斜器械推胸、低角度史密斯推胸。'},
+ '哑铃侧平举':{muscle:'三角肌中束',setup:'双脚站稳，哑铃置于身体两侧，肘部微屈。',steps:['肩膀自然下沉，不要耸肩','手臂向身体两侧抬起，肘部略领先手腕','抬至肩部附近或舒适高度','缓慢下放，不借身体摆动'],breath:'抬起呼气；下放吸气。',errors:'耸肩、甩动躯干、哑铃抬得过高或手腕刻意上翻。',alternative:'绳索侧平举、器械侧平举。'},
+ '绳索下压':{muscle:'肱三头肌',setup:'面对高位拉力器站立，肘部贴近身体两侧。',steps:['上臂保持稳定，肩膀放松','伸肘将把手向下压至手臂接近伸直','底部短暂停顿，感受肱三头肌收缩','控制把手回到起点，肘部不要前后漂移'],breath:'下压呼气；回程吸气。',errors:'身体大幅前倾借力、肘部张开、用肩膀压把手。',alternative:'哑铃臂屈伸、弹力带下压。'},
+ '臀桥':{muscle:'臀大肌',setup:'仰卧屈膝，双脚踩地约髋宽，手臂放在身体两侧。',steps:['轻收腹部，让腰背保持自然稳定','脚掌踩地，抬起髋部','顶端收紧臀部，不要用腰顶高','缓慢下放至接近地面，再开始下一次'],breath:'抬起呼气；下降吸气。',errors:'腰部过度反弓、脚离臀过远、用脚尖单独发力。',alternative:'髋推、臀桥器械。'},
+ '长步幅反向弓步':{muscle:'臀大肌、股四头肌',setup:'双脚站稳，身体直立，必要时先徒手练习平衡。',steps:['一脚向后迈出较长一步','前脚全脚掌踩稳，身体垂直下沉','前膝沿脚尖方向移动，后膝朝地面下降','前脚发力回到站立，完成一侧后换边'],breath:'下沉吸气；起身呼气。',errors:'前脚脚跟抬起、膝盖明显内扣、步幅过小或身体失去平衡。',alternative:'扶支撑反向弓步、分腿蹲。'},
+ '坐姿腿弯举':{muscle:'腘绳肌',setup:'调整靠背和滚轴，使膝关节转轴与器械转轴大致对齐。',steps:['臀部贴稳座椅，靠垫固定大腿','屈膝将滚轴向下向后拉','在可控范围短暂停顿','缓慢伸膝回程，不让配重片撞击'],breath:'屈膝呼气；回程吸气。',errors:'臀部离开座椅、动作过快、重量过大导致幅度缩短。',alternative:'俯卧腿弯举、弹力带腿弯举。'},
+ '高位下拉':{muscle:'背阔肌、大圆肌、肱二头肌',setup:'调整大腿固定垫，双手略宽于肩握住横杆。',steps:['坐稳，胸部自然打开，肩膀先下沉','肘部向下并略向身体两侧移动','将横杆拉向上胸附近，不要拉到颈后','控制手臂伸展回程，肩部不要突然耸起'],breath:'下拉呼气；回程吸气。',errors:'大幅后仰、耸肩起拉、拉到颈后、用身体摆动借力。',alternative:'中立握高位下拉、辅助引体向上。'},
+ '坐姿划船':{muscle:'背阔肌、菱形肌、中下斜方肌',setup:'坐稳，双脚踩踏板，膝盖微屈，握住把手。',steps:['脊柱保持自然，肩膀放松','先让肩胛自然前伸，再向后收肩胛并带动肘部后拉','把手拉向腹部附近，躯干不要后仰借力','控制手臂伸直，回到起点'],breath:'拉回呼气；前伸吸气。',errors:'腰部前后摇摆、耸肩、只用手臂弯举、过度挺腰。',alternative:'胸托划船、单臂哑铃划船。'},
+ '反向飞鸟':{muscle:'三角肌后束、上背部',setup:'使用反向飞鸟器械或俯身姿势，肩膀放松，肘部微屈。',steps:['保持躯干稳定，胸口自然支撑','手臂向身体两侧打开，想象肘部向外移动','在肩部舒适范围内停顿','缓慢合回，不要让重量带动肩膀前冲'],breath:'打开呼气；合回吸气。',errors:'重量过大、耸肩、用腰甩动、手臂完全伸直锁死。',alternative:'绳索反向飞鸟、弹力带拉开。'},
+ '死虫式':{muscle:'腹横肌、腹直肌及核心稳定肌群',setup:'仰卧，髋膝抬起约90度，双臂指向天花板。',steps:['轻收腹部，让腰背保持稳定贴近地面','缓慢伸出一侧手臂与对侧腿','在腰背仍稳定的范围内伸展','回到起点，换另一侧交替进行'],breath:'伸展时缓慢呼气；回收时吸气。',errors:'腰部明显拱起、动作太快、伸展幅度超过核心控制能力。',alternative:'脚跟点地死虫式、单腿抬放。'},
+ 'Pallof Press':{muscle:'腹斜肌及抗旋转核心肌群',setup:'侧对拉力器或弹力带固定点，双手握把置于胸前。',steps:['双脚站稳，膝盖微屈，骨盆朝前','双手从胸前缓慢向前推出','抵抗拉力，不让躯干向固定点旋转','停顿后收回胸前，完成一侧再换边'],breath:'推出时呼气；收回时吸气。',errors:'身体跟着拉力旋转、耸肩、站距太窄导致失衡。',alternative:'弹力带Pallof Press、跪姿抗旋转推。'}
+};
+function teachingFor(name){
+ const base=exerciseTeaching[name]||{muscle:'按动作目标肌群',setup:'先调整器械并选择轻重量，确保身体稳定。',steps:['摆好稳定起始姿势','沿可控制的轨迹完成动作','缓慢还原，保持自然呼吸'],breath:'发力时呼气；还原时吸气。',errors:'避免借惯性、憋气和疼痛下强行完成。',alternative:'选择相同目标肌群、自己能稳定控制的替代动作。'};
+ return base;
+}
+function showPlan(id,focusIndex=0){
+ const p=db.plans.find(x=>x.id===id);if(!p)return;
+ document.getElementById('modalTitle').textContent=p.name+' · 动作教学';
+ window.currentTeachingPlan=id;window.currentTeachingIndex=Math.max(0,Math.min(focusIndex,p.items.length-1));
+ renderPlanTeaching();
  document.getElementById('modal').classList.add('show');
 }
+function renderPlanTeaching(){
+ const p=db.plans.find(x=>x.id===window.currentTeachingPlan);if(!p)return;
+ const selected=p.items[window.currentTeachingIndex];if(!selected)return;
+ const [name,sets,reps,rest,muscle]=selected;const t=teachingFor(name);
+ const steps=t.steps.map((s,i)=>`<div class="exercise-step"><span class="exercise-step-num">${i+1}</span><span>${s}</span></div>`).join('');
+ const media=t.gif?`<div class="exercise-media-stage"><img src="${t.gif}" alt="${name}动态动作演示" loading="lazy"></div><div class="exercise-video-note">动态演示：${t.source||'动作示范资源'}。若图片未加载，下面仍有完整分步骤说明。</div>`:
+  `<div class="exercise-media-stage"><div class="exercise-media-placeholder"><span class="figure">◉</span><b>动作分解教学</b><p>先看准备姿势，再按下方步骤完成动作。当前动作暂未接入经过验证的动态视频，避免展示错误示范。</p></div></div>`;
+ const sourceLink=t.gif?'https://planworkouts.com/exercise/barbell-romanian-deadlift/':(exerciseMedia[name]?.guide||'');
+ document.getElementById('modalBody').innerHTML=`<div class="exercise-modal-head"><div><div class="exercise-modal-kicker">TRAINING GUIDE · ${window.currentTeachingIndex+1}/${p.items.length}</div><div class="exercise-modal-title">${p.name}</div><div class="exercise-modal-sub">${p.focus} · ${p.duration} · 建议 RPE 6–7</div></div><span class="pill">${p.items.length} 个动作</span></div>
+ <div class="exercise-teach-layout">
+  <div class="exercise-picker">${p.items.map((x,i)=>`<button class="exercise-pick ${i===window.currentTeachingIndex?'active':''}" onclick="selectTeachingExercise(${i})"><span class="exercise-pick-num">${i+1}</span><span><span class="exercise-pick-name">${x[0]}</span><span class="exercise-pick-meta">${x[1]}组 × ${x[2]}</span></span></button>`).join('')}</div>
+  <div class="exercise-teach-main">
+   <div class="exercise-teach-top"><div><div class="exercise-teach-name">${name}</div><div class="exercise-modal-sub">${muscle||t.muscle} · 组间休息 ${rest}</div></div><div class="exercise-prescription">${sets}组 × ${reps}</div></div>
+   ${media}
+   <div class="exercise-section-label">01 · 准备姿势</div><div class="exercise-steps"><div class="exercise-step"><span class="exercise-step-num">✓</span><span>${t.setup}</span></div></div>
+   <div class="exercise-section-label">02 · 动作步骤</div><div class="exercise-steps">${steps}</div>
+   <div class="exercise-two-col"><div class="exercise-info-box"><b>呼吸节奏</b><span>${t.breath}</span></div><div class="exercise-info-box"><b>常见错误</b><span>${t.errors}</span></div></div>
+   <div class="exercise-info-box" style="margin-top:9px"><b>可选替代动作</b><span>${t.alternative}</span></div>
+   <div class="exercise-teach-actions"><span class="exercise-video-note">${t.gif?'有动态演示':'动态视频待补充；文字步骤为当前教学依据'}</span><div class="exercise-step-nav"><button class="btn light" onclick="selectTeachingExercise(Math.max(0,window.currentTeachingIndex-1))" ${window.currentTeachingIndex===0?'disabled':''}>上一个</button><button class="btn" onclick="selectTeachingExercise(Math.min(${p.items.length-1},window.currentTeachingIndex+1))" ${window.currentTeachingIndex===p.items.length-1?'disabled':''}>下一个动作</button></div></div>
+   ${sourceLink?`<a class="video-link" href="${sourceLink}" target="_blank" rel="noopener">↗ 查看补充教学资料</a>`:''}
+  </div>
+ </div><div class="notice" style="margin-top:13px">先用轻重量熟悉动作。动作质量优先于重量；若出现疼痛、头晕或异常不适，立即停止训练。</div>`;
+}
+function selectTeachingExercise(index){const p=db.plans.find(x=>x.id===window.currentTeachingPlan);if(!p)return;window.currentTeachingIndex=Math.max(0,Math.min(index,p.items.length-1));renderPlanTeaching();}
+
 function closeModal(){document.getElementById('modal').classList.remove('show')}
 function openNewPlan(){alert('下一轮将开放计划编辑：新增训练日、调整动作顺序、组数、次数和休息时间。当前先确认整体结构。')}
 let active=null,timer=null,remain=90;
