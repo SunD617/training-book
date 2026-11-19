@@ -32,6 +32,11 @@ document.getElementById('run').onclick=async()=>{
   let w=await loadFrame();
   w.alert=()=>{};w.confirm=()=>true;
   const checks=[];
+  checks.push(['本地日期格式',w.formatLocalDate(new Date(2026,0,2,0,30))==='2026-01-02','按设备本地年月日计算，不使用UTC日期']);
+  checks.push(['本地日期跨日边界',w.formatLocalDate(new Date(2026,0,1,23,59))==='2026-01-01'&&w.formatLocalDate(new Date(2026,0,2,0,1))==='2026-01-02','午夜前后日期不串日']);
+  const validBackup={plans:[{id:'T',day:1,items:[['测试动作',1,'8','60秒']]}],logs:[],measures:[]};
+  checks.push(['备份结构校验',w.validateBackupData(validBackup).ok,'有效备份结构可通过']);
+  checks.push(['损坏备份拦截',!w.validateBackupData({plans:[],logs:'bad'}).ok,'无效结构不能覆盖正式数据']);
   checks.push(['测试环境隔离',!!JSON.parse(localStorage.getItem(KEY)||'null'),'测试数据空间已创建']);
   w.startPlan('A');await wait(100);
   checks.push(['训练前动作确认',w.document.getElementById('modal').classList.contains('show')&&w.document.getElementById('modalTitle').textContent.includes('训练前动作确认'),'开始训练前先确认动作']);
