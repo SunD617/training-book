@@ -484,8 +484,8 @@ function exerciseCue(name){
  return cues[name]||'选择可控重量，动作平稳，保持自然呼吸；出现疼痛或异常不适立即停止。';
 }
 const exerciseMedia={
- '臀推 Hip Thrust':{video:'pF17m_CXfL0',source:'Runna · Hip Thrust Tutorial',url:'https://www.youtube.com/watch?v=pF17m_CXfL0',steps:['上背靠稳凳边，脚掌踩地','脚跟发力抬起髋部，顶端收紧臀部','控制下放；不要用腰向后折']},
- '罗马尼亚硬拉':{video:'SE-2Y-3a1pY',source:'Romanian Deadlift technique',url:'https://www.youtube.com/watch?v=SE-2Y-3a1pY',steps:['双脚髋宽站立，膝盖微屈','臀部向后推，重量贴近大腿和小腿','感到大腿后侧拉伸后，臀部发力站起']},
+ '臀推 Hip Thrust':{guide:'https://fitbod.me/exercises/barbell-hip-thrust',source:'Fitbod · Barbell Hip Thrust动作指南',steps:['上背靠稳凳边，脚掌踩地','脚跟发力抬起髋部，顶端收紧臀部','控制下放；不要用腰向后折']},
+ '罗马尼亚硬拉':{gif:'https://planworkouts.com/videos/0085-wQ2c4XD.gif',guide:'https://planworkouts.com/exercise/barbell-romanian-deadlift/',source:'PlanWorkouts · 动态动作演示',steps:['双脚髋宽站立，膝盖微屈','臀部向后推，重量贴近大腿和小腿','感到大腿后侧拉伸后，臀部发力站起']},
  '绳索后踢腿':{guide:'https://seqd.app/exercises/cable-glute-kickback/',source:'SEQD · Cable Glute Kickback',steps:['脚踝固定低位拉力器，扶稳器械','保持骨盆朝前，从髋部向后伸腿','慢慢回到起点，不要甩腿或塌腰']},
  '髋外展机':{guide:'https://seqd.app/exercises/hip-abduction-machine/',source:'SEQD · Hip Abduction Machine',steps:['坐稳，外侧大腿贴住软垫','膝盖向外打开，躯干和骨盆保持稳定','缓慢合回，不让配重片砸落']},
  '长步幅反向弓步':{steps:['双脚站稳，向后迈出较长一步','前脚踩稳，身体垂直下沉','前脚发力回到站立，换侧进行']},
@@ -504,10 +504,10 @@ function showPlan(id){
  <div class="session-hint">建议强度：RPE 6–7，保留约3–4次余力。每组动作质量优先于重量。</div>
  ${p.items.map((x,i)=>{
   const m=mediaForExercise(x[0]);
-  const visual=m.video?`<div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/${m.video}?rel=0" title="${x[0]}动作演示" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><div class="tiny muted">演示来源：${m.source}</div>`:
-   m.guide?`<a class="btn light" style="display:inline-flex;margin:8px 0" href="${m.guide}" target="_blank" rel="noopener">▶ 打开动作演示与步骤</a><div class="tiny muted">演示来源：${m.source}</div>`:
+  const visual=m.gif?`<div class="video-frame"><img src="${m.gif}" alt="${x[0]}动态动作演示" loading="lazy" style="width:100%;height:100%;object-fit:contain;background:#fff"></div><div class="tiny muted">动态演示来源：${m.source}</div>`:
+   m.guide?`<a class="btn light" style="display:inline-flex;margin:8px 0" href="${m.guide}" target="_blank" rel="noopener">↗ 打开免登录动作教学页</a><div class="tiny muted">教学来源：${m.source}</div>`:
    `<div class="motion-guide"><b>动作分解</b><div class="motion-steps">${(m.steps||['先摆好稳定姿势','沿可控制的轨迹完成发力','缓慢还原，保持自然呼吸']).map((s,j)=>`<div class="motion-step"><span>${j+1}</span>${s}</div>`).join('')}</div></div>`;
-  return `<div class="exercise exercise-detail"><div class="exicon">${i+1}</div><div class="grow"><div class="exname">${x[0]}</div><div class="exmeta">${x[4]||''} · 组间休息 ${x[3]} · ${x[1]}组 × ${x[2]}</div><div class="exercise-tip">${exerciseCue(x[0])}</div>${visual}<a class="video-link" href="${m.url||m.search}" target="_blank" rel="noopener">↗ ${m.url?'在 YouTube 打开完整教学':'搜索完整动作教学视频'}</a></div></div>`;
+  return `<div class="exercise exercise-detail"><div class="exicon">${i+1}</div><div class="grow"><div class="exname">${x[0]}</div><div class="exmeta">${x[4]||''} · 组间休息 ${x[3]} · ${x[1]}组 × ${x[2]}</div><div class="exercise-tip">${exerciseCue(x[0])}</div>${visual}<a class="video-link" href="${m.guide||m.search}" target="_blank" rel="noopener">↗ ${m.guide?'打开完整动作教学':'搜索动作教学'}</a></div></div>`;
  }).join('')}
  <div class="notice" style="margin-top:12px">先观看演示，再用轻重量熟悉动作轨迹。出现疼痛或异常不适时停止；动作质量优先于重量。</div>`;
  document.getElementById('modal').classList.add('show');
