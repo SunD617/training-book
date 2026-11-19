@@ -71,6 +71,20 @@ document.getElementById('run').onclick=async()=>{
   w.closeModal();
   checks.push(['V16 主动作国内视频入口',teachingOk,teachingCount+'个主动作均有B站教学入口']);
   checks.push(['V16 替代动作教学入口',teachingOk&&alternativeCount>=teachingCount*2,alternativeCount+'个替代动作均配置B站演示入口']);
+  // V16.2：替代动作必须直接内嵌 B 站播放器，不再要求用户筛选搜索结果
+  let embeddedAlternatives=true,embeddedCount=0;
+  for(const pid of ['A','B','C','D']){
+   w.showPlan(pid);await wait(80);
+   const picks=[...w.document.querySelectorAll('#modalBody .exercise-pick')];
+   for(let i=0;i<picks.length;i++){
+    w.selectTeachingExercise(i);await wait(40);
+    const cards=[...w.document.querySelectorAll('#modalBody .v16-alt-card')];
+    if(cards.length<2||cards.some(c=>!c.querySelector('iframe[src*="player.bilibili.com/player.html?bvid="]')))embeddedAlternatives=false;
+    embeddedCount+=cards.length;
+   }
+  }
+  w.closeModal();
+  checks.push(['V16.2 替代动作直接内嵌视频',embeddedAlternatives,embeddedCount+'个替代动作卡片均包含B站播放器']);
   checks.forEach(x=>line(x[0],x[1],x[2]));
   const n=checks.filter(x=>x[1]).length;
   line('总结果',n===checks.length,n+'/'+checks.length+' 项通过');
