@@ -58,6 +58,18 @@ input,select,textarea{width:100%;padding:11px;border:1px solid var(--line);borde
 .modal{display:none;position:fixed;inset:0;background:#17231e77;z-index:30;align-items:flex-end;justify-content:center}.modal.show{display:flex}
 .sheet{width:100%;max-width:760px;max-height:88vh;overflow:auto;background:var(--bg);border-radius:20px 20px 0 0;padding:17px 16px calc(24px + env(safe-area-inset-bottom))}
 .sheethead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.close{border:0;background:#e9eeea;border-radius:50%;width:32px;height:32px;font-size:18px}
+/* V16.3 训练前动作预选与个人偏好记忆 */
+.prestart-head{margin-bottom:12px}
+.prestart-filter,.prestart-library,.prestart-pending{padding:12px;border:1px solid var(--line);border-radius:13px;background:#f7f9f7;margin:10px 0}
+.prestart-list{display:grid;gap:9px}
+.prestart-row{padding:12px;border:1px solid var(--line);border-radius:13px;background:#fff}
+.prestart-select-grid{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:9px 0 5px}
+.prestart-select-grid select{min-width:0;width:100%;border:1px solid var(--line);border-radius:9px;padding:9px;background:#fff;color:var(--ink)}
+.prestart-rating{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:9px;padding-top:8px;border-top:1px solid var(--line)}
+.prestart-rating span{font-size:11px;color:var(--muted);width:100%}
+.prestart-rating .btn{font-size:11px;padding:6px 9px}
+.prestart-library input{min-width:0;flex:1}
+@media(min-width:680px){.prestart-list{grid-template-columns:1fr 1fr}}
 /* V16.2 替代动作内嵌播放器 */
 .v16-alt-video{width:100%;aspect-ratio:16/9;margin-top:9px;border-radius:9px;overflow:hidden;background:#101010}
 .v16-alt-video iframe{display:block;width:100%;height:100%;border:0}
@@ -398,7 +410,7 @@ const seed=[
 ];
 let db=read();
 function read(){try{return JSON.parse(localStorage.getItem(KEY))||{plans:seed,logs:[],measures:[],allowed:false,note:''}}catch(e){return {plans:seed,logs:[],measures:[],allowed:false,note:''}}}
-if(!db.plans)db.plans=seed;if(!db.logs)db.logs=[];if(!db.sessions)db.sessions=[];if(!db.measures)db.measures=[];if(!db.foods)db.foods=[];if(!db.routines)db.routines=[];if(!db.agendaDone)db.agendaDone={};if(!db.shoppingPrices)db.shoppingPrices={};if(!db.snackChecks)db.snackChecks={};if(!db.dinnerTasks)db.dinnerTasks={};
+if(!db.plans)db.plans=seed;if(!db.logs)db.logs=[];if(!db.sessions)db.sessions=[];if(!db.measures)db.measures=[];if(!db.foods)db.foods=[];if(!db.routines)db.routines=[];if(!db.exerciseMemory)db.exerciseMemory={};if(!db.agendaDone)db.agendaDone={};if(!db.shoppingPrices)db.shoppingPrices={};if(!db.snackChecks)db.snackChecks={};if(!db.dinnerTasks)db.dinnerTasks={};
 
 if(!db.v14ClearanceApplied){
  db.allowed=true;
@@ -720,7 +732,7 @@ let active=null,timer=null,remain=90;
 function restoreActiveSession(){
  const saved=db.activeSession;
  if(!saved||!saved.planId)return;
- const plan=db.plans.find(p=>p.id===saved.planId);
+ const plan=saved.planSnapshot||db.plans.find(p=>p.id===saved.planId);
  if(!plan){db.activeSession=null;return}
  active={plan,idx:0,sets:Array.isArray(saved.sets)?saved.sets:[],startedAt:saved.startedAt||Date.now(),
   energy:saved.energy||'不错',symptoms:saved.symptoms||'无明显不适',preNote:saved.preNote||'',
@@ -735,20 +747,112 @@ function saveActiveDraft(){
  active.sessionRpe=document.getElementById('sessionRpe')?.value||active.sessionRpe||'7';
  active.after=document.getElementById('sessionAfter')?.value||active.after||'状态良好';
  active.summary=document.getElementById('sessionSummary')?.value??active.summary??'';
- db.activeSession={planId:active.plan.id,sets:active.sets,startedAt:active.startedAt,
+ db.activeSession={planId:active.plan.id,planSnapshot:active.plan,sets:active.sets,startedAt:active.startedAt,
   energy:active.energy,symptoms:active.symptoms,preNote:active.preNote,
   sessionRpe:active.sessionRpe,after:active.after,summary:active.summary};
  localStorage.setItem(KEY,JSON.stringify(db));
 }
-function startPlan(id){
+let prestartDraft=null,prestartPlanId=null,prestartFilter='all';
+function exerciseMemoryEntry(name){
+ db.exerciseMemory=db.exerciseMemory||{};
+ if(!db.exerciseMemory[name])db.exerciseMemory[name]={name,status:'new',preference:'unrated',timesUsed:0,firstAddedAt:Date.now(),lastUsedAt:null,source:'计划/动作库'};
+ return db.exerciseMemory[name];
+}
+function preferenceLabel(entry){
+ if(!entry)return '未记忆';
+ if(entry.status==='new')return '待尝试';
+ if(entry.preference==='like')return '喜欢';
+ if(entry.preference==='neutral')return '一般';
+ if(entry.preference==='dislike')return '不喜欢';
+ return '已体验·待评价';
+}
+function preferenceMatches(name,filter){
+ const e=db.exerciseMemory?.[name];
+ if(filter==='all')return true;
+ if(filter==='liked')return e?.preference==='like';
+ if(filter==='new')return !e||e.status==='new';
+ if(filter==='disliked')return e?.preference==='dislike';
+ if(filter==='neutral')return e?.preference==='neutral';
+ return true;
+}
+function prestartOptions(slot){
+ const base=slot.base[0],alts=(exerciseAlternatives[base]||[]).map(x=>x[0]);
+ const library=Object.keys(db.exerciseMemory||{});
+ const all=[...new Set([base,...alts,...library])];
+ const filtered=all.filter(n=>preferenceMatches(n,prestartFilter));
+ if(!filtered.includes(slot.exercise))filtered.unshift(slot.exercise);
+ return filtered;
+}
+function openPrestartPlan(id){
  const p=db.plans.find(x=>x.id===id);if(!p){alert('没有找到这套训练计划，请刷新后重试。');return}
  if(!db.allowed){alert('训练启用状态未确认，请检查「我的」页面。');return}
  if(active&&!confirm('当前还有一条未结束的训练记录。要放弃它并开始新训练吗？'))return;
- active={plan:p,idx:0,sets:[],startedAt:Date.now(),energy:'不错',symptoms:'无明显不适',preNote:'',sessionRpe:'7',after:'状态良好',summary:''};
- db.activeSession={planId:p.id,sets:[],startedAt:active.startedAt,energy:'不错',symptoms:'无明显不适',preNote:'',sessionRpe:'7',after:'状态良好',summary:''};
- localStorage.setItem(KEY,JSON.stringify(db));
- renderSession();go('log');
+ prestartPlanId=id;prestartFilter='all';
+ prestartDraft=p.items.map(x=>({base:[...x],exercise:x[0],skipped:false}));
+ renderPrestartPlan();
+ document.getElementById('modal').classList.add('show');
 }
+function setPrestartExercise(index,name){
+ const slot=prestartDraft?.[index];if(!slot)return;
+ if(name==='__skip__'){slot.skipped=true;renderPrestartPlan();return}
+ slot.skipped=false;slot.exercise=name;
+ exerciseMemoryEntry(name);
+ const original=slot.base[0];
+ if(name!==original)exerciseMemoryEntry(name).source='替代/个人动作库';
+ localStorage.setItem(KEY,JSON.stringify(db));
+ renderPrestartPlan();
+}
+function setPrestartFilter(value){prestartFilter=value;renderPrestartPlan()}
+function addPersonalExercise(){
+ const input=document.getElementById('newPersonalExercise');
+ const name=(input?.value||'').trim();
+ if(!name){alert('先填写动作名称。');return}
+ if(name.length>32){alert('动作名称请控制在32个字以内。');return}
+ exerciseMemoryEntry(name).source='自定义';
+ localStorage.setItem(KEY,JSON.stringify(db));
+ renderPrestartPlan();
+ const el=document.getElementById('newPersonalExercise');if(el)el.value='';
+}
+function setExercisePreference(name,value){
+ const e=exerciseMemoryEntry(name);e.status='tried';e.preference=value;e.ratedAt=Date.now();
+ localStorage.setItem(KEY,JSON.stringify(db));renderPrestartPlan();
+}
+function renderPrestartPlan(){
+ const p=db.plans.find(x=>x.id===prestartPlanId);if(!p||!prestartDraft)return;
+ const pending=Object.entries(db.exerciseMemory||{}).filter(([n,e])=>e.status==='tried'&&e.preference==='unrated');
+ const filterOptions=[['all','全部动作'],['liked','我喜欢的'],['new','尚未尝试'],['neutral','一般'],['disliked','不喜欢']];
+ const filterHtml=filterOptions.map(([v,l])=>`<button class="btn ${prestartFilter===v?'':'light'}" style="font-size:11px;padding:7px 9px" onclick="setPrestartFilter('${v}')">${l}</button>`).join('');
+ const rows=prestartDraft.map((slot,i)=>{
+  const options=prestartOptions(slot);
+  const e=db.exerciseMemory?.[slot.exercise];
+  const altReason=(exerciseAlternatives[slot.base[0]]||[]).find(x=>x[0]===slot.exercise)?.[1]||'个人动作库中的自选动作';
+  return `<div class="prestart-row">
+   <div class="row between"><div><b>${i+1}. ${slot.base[0]}</b><div class="tiny muted">${slot.base[1]}组 × ${slot.base[2]}次 · 休息${slot.base[3]}</div></div><span class="pill">${slot.skipped?'已跳过':preferenceLabel(e)}</span></div>
+   <div class="prestart-select-grid"><select aria-label="选择第${i+1}个训练动作" onchange="setPrestartExercise(${i},this.value)"><option value="${slot.exercise}">${slot.exercise}</option>${options.filter(n=>n!==slot.exercise).map(n=>`<option value="${n}">${n} · ${preferenceLabel(db.exerciseMemory?.[n])}</option>`).join('')}<option value="__skip__">本次跳过这个动作</option></select><button class="btn light" onclick="showPlan('${p.id}',${Math.min(i,p.items.length-1)})">看动作教学</button></div>
+   <div class="tiny muted">${altReason}</div>
+   ${e?.status==='tried'&&e.preference==='unrated'?`<div class="prestart-rating"><span>上次练过，感觉如何？</span><button class="btn light" onclick="setExercisePreference('${slot.exercise}','like')">喜欢</button><button class="btn light" onclick="setExercisePreference('${slot.exercise}','neutral')">一般</button><button class="btn light" onclick="setExercisePreference('${slot.exercise}','dislike')">不喜欢</button></div>`:''}
+  </div>`;
+ }).join('');
+ document.getElementById('modalTitle').textContent=p.name+' · 训练前动作确认';
+ document.getElementById('modalBody').innerHTML=`<div class="prestart-head"><div class="bigtitle" style="font-size:20px">今天练什么，由你先确定</div><div class="meta">${p.focus} · ${p.duration}。原计划不会被修改，以下调整只对本次训练生效。</div></div>
+ <div class="prestart-filter"><b>按个人偏好筛选动作</b><div class="row wrap" style="gap:6px;margin-top:8px">${filterHtml}</div></div>
+ <div class="prestart-list">${rows}</div>
+ <div class="prestart-library"><b>添加从未选择过的新动作</b><div class="meta">加入个人动作库后，可以在本次或以后训练中选择；首次训练后会进入待评价状态。</div><div class="row" style="margin-top:8px"><input id="newPersonalExercise" placeholder="输入动作名称，例如：坐姿髋外旋" maxlength="32"><button class="btn light" onclick="addPersonalExercise()">加入动作库</button></div></div>
+ <div class="prestart-pending"><b>待评价动作：${pending.length} 个</b><div class="tiny muted">${pending.length?'下次进入动作确认时，可以标记喜欢、一般或不喜欢。':'新动作完成首次训练后，会自动出现在这里。'}</div></div>
+ <div class="row" style="margin-top:14px"><button class="btn light grow" onclick="closeModal()">再想想</button><button class="btn grow" onclick="confirmStartPlan()">确认动作，开始训练（${prestartDraft.filter(x=>!x.skipped).length}个）</button></div>`;
+}
+function confirmStartPlan(){
+ const p=db.plans.find(x=>x.id===prestartPlanId);if(!p||!prestartDraft)return;
+ const items=prestartDraft.filter(x=>!x.skipped).map(x=>[x.exercise,x.base[1],x.base[2],x.base[3],x.base[4]]);
+ if(!items.length){alert('至少保留一个训练动作。');return}
+ const sessionPlan={...p,items:items.map(x=>[...x]),templatePlanId:p.id};
+ items.forEach(x=>exerciseMemoryEntry(x[0]));
+ active={plan:sessionPlan,idx:0,sets:[],startedAt:Date.now(),energy:'不错',symptoms:'无明显不适',preNote:'',sessionRpe:'7',after:'状态良好',summary:''};
+ db.activeSession={planId:p.id,planSnapshot:sessionPlan,sets:[],startedAt:active.startedAt,energy:'不错',symptoms:'无明显不适',preNote:'',sessionRpe:'7',after:'状态良好',summary:''};
+ localStorage.setItem(KEY,JSON.stringify(db));
+ closeModal();renderSession();go('log');
+}
+function startPlan(id){openPrestartPlan(id)}
 function renderSession(){
  document.getElementById('lockMsg').style.display='none';document.getElementById('activeLog').style.display='block';
  document.getElementById('sessionEnergy').value=active.energy||'不错';
@@ -780,6 +884,9 @@ function finishSession(){if(!active){alert('当前没有进行中的训练。');
  after:document.getElementById('sessionAfter').value,summary:document.getElementById('sessionSummary').value,
  durationMin:Math.max(1,Math.round((Date.now()-active.startedAt)/60000))};
  active.sets.forEach(s=>db.logs.push({...s,...meta}));
+ db.exerciseMemory=db.exerciseMemory||{};
+ active.plan.items.forEach(x=>{const name=x[0],e=exerciseMemoryEntry(name);e.status='tried';e.timesUsed=(e.timesUsed||0)+1;e.lastUsedAt=Date.now();if(!e.preference)e.preference='unrated';});
+ meta.exerciseNames=active.plan.items.map(x=>x[0]);
  db.sessions=db.sessions||[];db.sessions.push(meta);
  active=null;db.activeSession=null;
  if(timer){clearInterval(timer);timer=null}remain=90;
