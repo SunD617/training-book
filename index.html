@@ -112,6 +112,7 @@ canvas{width:100%;height:160px}
 
 
 .session-hint{background:var(--surface);border:1px solid var(--line);padding:10px;border-radius:10px;margin:9px 0;font-size:12px;color:var(--muted);line-height:1.55}
+.video-frame{position:relative;width:100%;aspect-ratio:16/9;margin:10px 0 5px;border-radius:12px;overflow:hidden;background:#101814}.video-frame iframe{width:100%;height:100%;border:0}.exercise-detail{align-items:flex-start;padding:15px 0}.motion-guide{margin:10px 0;padding:11px;border-radius:12px;background:#f1f5f1}.motion-guide>b{font-size:12px}.motion-steps{display:grid;gap:7px;margin-top:8px}.motion-step{display:flex;align-items:flex-start;gap:8px;font-size:12px;line-height:1.55;color:#52645a}.motion-step span{display:grid;place-items:center;flex:none;width:21px;height:21px;border-radius:50%;background:#dce9df;color:#285b43;font-weight:800}.video-link{display:inline-block;margin:8px 0 2px;color:var(--green);font-size:12px;font-weight:750;text-decoration:none}.video-link:hover{text-decoration:underline}
 .exercise-tip{font-size:12px;color:var(--muted);line-height:1.55;margin-top:6px}
 .set-row{border-top:1px solid var(--line);padding-top:9px;margin-top:9px}
 \n
@@ -482,7 +483,35 @@ function exerciseCue(name){
  };
  return cues[name]||'选择可控重量，动作平稳，保持自然呼吸；出现疼痛或异常不适立即停止。';
 }
-function showPlan(id){let p=db.plans.find(x=>x.id===id);document.getElementById('modalTitle').textContent=p.name+' · 训练计划';document.getElementById('modalBody').innerHTML=`<div class="sub">${p.focus} · ${p.duration}</div><div class="session-hint">建议强度：RPE 6–7，保留约3–4次余力。每组动作质量优先于重量。</div>${p.items.map((x,i)=>`<div class="exercise"><div class="exicon">${i+1}</div><div class="grow"><div class="exname">${x[0]}</div><div class="exmeta">${x[4]||''} · 组间休息 ${x[3]}</div><div class="exercise-tip">${exerciseCue(x[0])}</div></div><div class="exsets">${x[1]}组 × ${x[2]}</div></div>`).join('')}<div class="notice" style="margin-top:12px">每个动作先用轻重量熟悉轨迹；所有目标次数都能稳定完成且无异常不适，再考虑小幅增加重量。</div>`;document.getElementById('modal').classList.add('show')}
+const exerciseMedia={
+ '臀推 Hip Thrust':{video:'pF17m_CXfL0',source:'Runna · Hip Thrust Tutorial',url:'https://www.youtube.com/watch?v=pF17m_CXfL0',steps:['上背靠稳凳边，脚掌踩地','脚跟发力抬起髋部，顶端收紧臀部','控制下放；不要用腰向后折']},
+ '罗马尼亚硬拉':{video:'SE-2Y-3a1pY',source:'Romanian Deadlift technique',url:'https://www.youtube.com/watch?v=SE-2Y-3a1pY',steps:['双脚髋宽站立，膝盖微屈','臀部向后推，重量贴近大腿和小腿','感到大腿后侧拉伸后，臀部发力站起']},
+ '绳索后踢腿':{guide:'https://seqd.app/exercises/cable-glute-kickback/',source:'SEQD · Cable Glute Kickback',steps:['脚踝固定低位拉力器，扶稳器械','保持骨盆朝前，从髋部向后伸腿','慢慢回到起点，不要甩腿或塌腰']},
+ '髋外展机':{guide:'https://seqd.app/exercises/hip-abduction-machine/',source:'SEQD · Hip Abduction Machine',steps:['坐稳，外侧大腿贴住软垫','膝盖向外打开，躯干和骨盆保持稳定','缓慢合回，不让配重片砸落']},
+ '长步幅反向弓步':{steps:['双脚站稳，向后迈出较长一步','前脚踩稳，身体垂直下沉','前脚发力回到站立，换侧进行']},
+ '高位下拉':{steps:['坐稳并固定大腿，双手略宽于肩握杆','先沉肩，再把肘部向下拉向身体两侧','控制手臂伸直回程，不大幅后仰']},
+ '坐姿划船':{steps:['坐稳，膝微屈，脊柱保持自然','肩胛先向后收，肘沿身体两侧向后拉','手臂缓慢伸直，躯干不要前后晃动']}
+};
+function mediaForExercise(name){
+ const m=exerciseMedia[name]||{};
+ const q=encodeURIComponent(name+' 动作教学 正确姿势');
+ return { ...m, search:'https://www.youtube.com/results?search_query='+q };
+}
+function showPlan(id){
+ let p=db.plans.find(x=>x.id===id);
+ document.getElementById('modalTitle').textContent=p.name+' · 训练计划';
+ document.getElementById('modalBody').innerHTML=`<div class="sub">${p.focus} · ${p.duration}</div>
+ <div class="session-hint">建议强度：RPE 6–7，保留约3–4次余力。每组动作质量优先于重量。</div>
+ ${p.items.map((x,i)=>{
+  const m=mediaForExercise(x[0]);
+  const visual=m.video?`<div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/${m.video}?rel=0" title="${x[0]}动作演示" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><div class="tiny muted">演示来源：${m.source}</div>`:
+   m.guide?`<a class="btn light" style="display:inline-flex;margin:8px 0" href="${m.guide}" target="_blank" rel="noopener">▶ 打开动作演示与步骤</a><div class="tiny muted">演示来源：${m.source}</div>`:
+   `<div class="motion-guide"><b>动作分解</b><div class="motion-steps">${(m.steps||['先摆好稳定姿势','沿可控制的轨迹完成发力','缓慢还原，保持自然呼吸']).map((s,j)=>`<div class="motion-step"><span>${j+1}</span>${s}</div>`).join('')}</div></div>`;
+  return `<div class="exercise exercise-detail"><div class="exicon">${i+1}</div><div class="grow"><div class="exname">${x[0]}</div><div class="exmeta">${x[4]||''} · 组间休息 ${x[3]} · ${x[1]}组 × ${x[2]}</div><div class="exercise-tip">${exerciseCue(x[0])}</div>${visual}<a class="video-link" href="${m.url||m.search}" target="_blank" rel="noopener">↗ ${m.url?'在 YouTube 打开完整教学':'搜索完整动作教学视频'}</a></div></div>`;
+ }).join('')}
+ <div class="notice" style="margin-top:12px">先观看演示，再用轻重量熟悉动作轨迹。出现疼痛或异常不适时停止；动作质量优先于重量。</div>`;
+ document.getElementById('modal').classList.add('show');
+}
 function closeModal(){document.getElementById('modal').classList.remove('show')}
 function openNewPlan(){alert('下一轮将开放计划编辑：新增训练日、调整动作顺序、组数、次数和休息时间。当前先确认整体结构。')}
 let active=null,timer=null,remain=90;
