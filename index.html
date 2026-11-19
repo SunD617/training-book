@@ -409,6 +409,8 @@ const seed=[
 {id:'D',day:5,name:'背部核心 D',focus:'背部 · 核心稳定',duration:'45–60分钟',items:[['高位下拉',3,'8–12','90秒','背阔肌'],['坐姿划船',3,'8–12','90秒','背部'],['反向飞鸟',2,'12–15','60秒','后三角'],['死虫式',2,'8–10/侧','45秒','核心'],['Pallof Press',2,'10–12/侧','45秒','核心']]}
 ];
 let db=read();
+/* V16.4 本地日期与数据导入保护 */
+db.schemaVersion='16.4';
 function read(){try{return JSON.parse(localStorage.getItem(KEY))||{plans:seed,logs:[],measures:[],allowed:false,note:''}}catch(e){return {plans:seed,logs:[],measures:[],allowed:false,note:''}}}
 if(!db.plans)db.plans=seed;if(!db.logs)db.logs=[];if(!db.sessions)db.sessions=[];if(!db.measures)db.measures=[];if(!db.foods)db.foods=[];if(!db.routines)db.routines=[];if(!db.exerciseMemory)db.exerciseMemory={};if(!db.agendaDone)db.agendaDone={};if(!db.shoppingPrices)db.shoppingPrices={};if(!db.snackChecks)db.snackChecks={};if(!db.dinnerTasks)db.dinnerTasks={};
 
@@ -457,12 +459,13 @@ if(!db.migrationMeta.v152ConfigRestore){
    personalHistory:'not available in recovered source; left empty'
   }
  };
- db.schemaVersion='15.2';
+ db.schemaVersion='16.4';
  localStorage.setItem(KEY,JSON.stringify(db));
 }
 
 function persist(){localStorage.setItem(KEY,JSON.stringify(db));render()}
-function today(){return new Date().toISOString().slice(0,10)}
+function formatLocalDate(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function today(){return formatLocalDate(new Date())}
 function dateObj(s){return new Date(s+'T12:00:00')}
 function go(id){
  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));
@@ -474,8 +477,8 @@ function go(id){
 function planForDay(d){return db.plans.find(p=>p.day===d)}
 function weekStart(){let d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d}
 function weekDate(i){let d=weekStart();d.setDate(d.getDate()+i);return d}
-function weekLogs(){let s=weekStart().toISOString().slice(0,10),e=new Date(weekStart());e.setDate(e.getDate()+7);return db.logs.filter(l=>l.date>=s&&l.date<e.toISOString().slice(0,10))}
-function weekStrip(){let w=document.getElementById('weekStrip');w.innerHTML='';let names=['一','二','三','四','五','六','日'];for(let i=0;i<7;i++){let d=weekDate(i),ds=d.toISOString().slice(0,10),has=db.logs.some(l=>l.date===ds),el=document.createElement('div');el.className='weekday'+(ds===today()?' active':'')+(has?' has':'');el.innerHTML=`${names[i]}<b>${d.getDate()}</b>`;w.appendChild(el)}document.getElementById('weekRange').textContent=weekStart().toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'})+' 起'}
+function weekLogs(){let s=formatLocalDate(weekStart()),e=new Date(weekStart());e.setDate(e.getDate()+7);return db.logs.filter(l=>l.date>=s&&l.date<formatLocalDate(e))}
+function weekStrip(){let w=document.getElementById('weekStrip');w.innerHTML='';let names=['一','二','三','四','五','六','日'];for(let i=0;i<7;i++){let d=weekDate(i),ds=formatLocalDate(d),has=db.logs.some(l=>l.date===ds),el=document.createElement('div');el.className='weekday'+(ds===today()?' active':'')+(has?' has':'');el.innerHTML=`${names[i]}<b>${d.getDate()}</b>`;w.appendChild(el)}document.getElementById('weekRange').textContent=weekStart().toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'})+' 起'}
 
 function agendaKey(){return today()}
 function setAgendaDone(id){db.agendaDone[agendaKey()]=db.agendaDone[agendaKey()]||{};db.agendaDone[agendaKey()][id]=true;persist()}
@@ -910,7 +913,35 @@ function drawChart(){let c=document.getElementById('chart');if(!c)return;let x=c
 function saveClearance(){if(document.getElementById('clearance').checked&&!confirm('确认你已经完成必要评估，并确认目前身体状况适合渐进式力量训练？')){document.getElementById('clearance').checked=false;return}db.allowed=document.getElementById('clearance').checked;persist()}
 function saveNote(){db.note=document.getElementById('healthNote').value;persist();alert('已保存')}
 function exportData(){let a=document.createElement('a'),u=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'}));a.href=u;a.download='训练簿备份.json';a.click();URL.revokeObjectURL(u)}
-function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);persist();alert('导入成功')}catch(_){alert('文件格式不正确')}};r.readAsText(f)}
+function validateBackupData(data){
+ if(!data||typeof data!=='object'||Array.isArray(data))return {ok:false,reason:'文件内容不是有效的数据对象'};
+ if(!Array.isArray(data.plans)||!Array.isArray(data.logs)||!Array.isArray(data.measures))return {ok:false,reason:'缺少训练计划、训练记录或身体数据，不能作为完整备份导入'};
+ if(data.plans.some(p=>!p||typeof p.id!=='string'||!Array.isArray(p.items)||!Number.isInteger(Number(p.day))))return {ok:false,reason:'训练计划结构不完整'};
+ if(data.logs.some(x=>!x||typeof x!=='object'||!x.date||!x.exercise))return {ok:false,reason:'训练记录中存在无效条目'};
+ return {ok:true};
+}
+function importData(e){
+ const f=e.target.files?.[0];if(!f)return;
+ const r=new FileReader();
+ r.onload=()=>{
+  try{
+   const incoming=JSON.parse(r.result),check=validateBackupData(incoming);
+   if(!check.ok){alert('备份校验未通过：'+check.reason+'。原有数据未改变。');return}
+   if(!confirm('即将导入 '+incoming.plans.length+' 套计划、'+incoming.logs.length+' 条训练组记录和 '+incoming.measures.length+' 条身体数据。此操作会替换当前设备上的训练簿数据，是否继续？'))return;
+   const normalized={...incoming};
+   ['sessions','foods','routines','reminders'].forEach(k=>{if(!Array.isArray(normalized[k]))normalized[k]=[]});
+   ['exerciseMemory','agendaDone','shoppingPrices','snackChecks','dinnerTasks'].forEach(k=>{if(!normalized[k]||typeof normalized[k]!=='object')normalized[k]={}});
+   normalized.schemaVersion='16.4';
+   const serialized=JSON.stringify(normalized);
+   localStorage.setItem(KEY,serialized);
+   db=normalized;restoreActiveSession();render();
+   alert('导入成功，原有数据已由本次导入替换。建议确认计划和历史记录数量。');
+  }catch(err){alert('导入失败：'+(err?.name==='QuotaExceededError'?'设备存储空间不足，原有数据未改变。':'文件无法读取或格式不正确，原有数据未改变。'))}
+  finally{e.target.value=''}
+ };
+ r.onerror=()=>{alert('文件读取失败，原有数据未改变。');e.target.value=''};
+ r.readAsText(f);
+}
 
 function showLifePanel(which){
  ['food','routine','data'].forEach(k=>{const el=document.getElementById(k+'Panel');if(el)el.style.display=(k===which?'block':'none')});
