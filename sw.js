@@ -1,4 +1,4 @@
-const CACHE_NAME = 'trainingbook-pwa-v15.5';
+const CACHE_NAME = 'trainingbook-pwa-v16';
 const BASE = new URL('./', self.location.href);
 const CORE = [new URL('./', BASE).toString(),new URL('./index.html', BASE).toString(),new URL('./manifest.webmanifest', BASE).toString(),new URL('./icon-192.png', BASE).toString(),new URL('./icon-512.png', BASE).toString(),new URL('./qa.html', BASE).toString()];
 self.addEventListener('install', event => { event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(CORE)).then(() => self.skipWaiting())); });
