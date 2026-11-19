@@ -123,7 +123,7 @@ canvas{width:100%;height:160px}
 <body>
 <div class="app">
 <header><div class="logo">训练簿<small>TRAIN & LIFE</small></div><div class="date" id="dateLabel"></div></header>
-<div class="pwa-status"><span><b>训练簿</b> · <small id="appVersionLabel">V15 在线 PWA</small></span><span id="updateStatus">版本检查中…</span></div>
+<div class="pwa-status"><span><b>训练簿</b> · <small id="appVersionLabel">V15.2 配置迁移版</small></span><span id="updateStatus">版本检查中…</span></div>
 <div class="test-mode-banner" id="testModeBanner">测试环境：所有记录与正式训练簿隔离，清理测试数据不会影响正式数据。</div>
 
 
@@ -354,6 +354,37 @@ if(!db.reminders){
   {id:'winddown',title:'睡前放松',category:'作息',time:'22:00',intensity:'normal',enabled:false,repeat:'daily',lastFired:'',doneDate:'',snoozeUntil:0},
   {id:'bed',title:'准备睡觉',category:'作息',time:'23:00',intensity:'strong',enabled:true,repeat:'daily',lastFired:'',doneDate:'',snoozeUntil:0}
  ];
+}
+
+
+/* V15.2：恢复程序配置，不伪造或覆盖个人历史记录。 */
+if(!db.migrationMeta)db.migrationMeta={};
+if(!db.migrationMeta.v152ConfigRestore){
+ if(!Array.isArray(db.plans)||db.plans.length===0)db.plans=seed;
+ if(!Array.isArray(db.logs))db.logs=[];
+ if(!Array.isArray(db.sessions))db.sessions=[];
+ if(!Array.isArray(db.measures))db.measures=[];
+ if(!Array.isArray(db.foods))db.foods=[];
+ if(!Array.isArray(db.routines))db.routines=[];
+ if(!Array.isArray(db.reminders))db.reminders=[];
+ if(!db.agendaDone||typeof db.agendaDone!=='object')db.agendaDone={};
+ if(!db.shoppingPrices||typeof db.shoppingPrices!=='object')db.shoppingPrices={};
+ if(!db.snackChecks||typeof db.snackChecks!=='object')db.snackChecks={};
+ if(!db.dinnerTasks||typeof db.dinnerTasks!=='object')db.dinnerTasks={};
+ db.migrationMeta.v152ConfigRestore={
+  completed:true,
+  source:'Recovered Training Book configuration and workout-plan workbook',
+  migratedAt:new Date().toISOString(),
+  restored:{
+   workoutPlans:db.plans.length,
+   reminderRules:db.reminders.length,
+   weeklyMealPlan:'built-in 7-day menu',
+   shoppingList:'built-in weekly list',
+   personalHistory:'not available in recovered source; left empty'
+  }
+ };
+ db.schemaVersion='15.2';
+ localStorage.setItem(KEY,JSON.stringify(db));
 }
 
 function persist(){localStorage.setItem(KEY,JSON.stringify(db));render()}
