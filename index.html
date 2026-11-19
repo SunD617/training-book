@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f6f7f5">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>训练簿 · 训练与生活管理</title>
+<style>
+:root{--bg:#f6f7f5;--surface:#fff;--ink:#202a25;--muted:#7d8982;--line:#e8ece8;--green:#376b52;--green2:#eaf1ec;--lime:#c6db9b;--amber:#b67a36;--red:#a84f4b;--shadow:0 6px 22px rgba(34,55,42,.055)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;padding-bottom:88px}
+button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}
+.app{max-width:760px;margin:auto;padding:env(safe-area-inset-top) 16px 24px}
+header{height:62px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:21px;font-weight:850;letter-spacing:-.5px}.logo small{font-size:10px;color:var(--green);font-weight:700;margin-left:5px}
+.date{font-size:12px;color:var(--muted)}
+.page{display:none}.page.active{display:block}
+h1{font-size:25px;letter-spacing:-.8px;margin:9px 0 3px}h2{font-size:18px;margin:0 0 12px}h3{font-size:15px;margin:0}
+.sub{color:var(--muted);font-size:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:var(--shadow)}
+.hero{background:#eaf1ec;border:0;box-shadow:none;padding:18px}
+.row{display:flex;align-items:center;gap:10px}.between{justify-content:space-between}.grow{flex:1;min-width:0}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:5px 9px;border-radius:30px;background:var(--green2);color:var(--green);font-size:11px;font-weight:750}
+.pill.lock{background:#f7eee4;color:#95632f}
+.bigtitle{font-size:22px;font-weight:850;letter-spacing:-.6px;margin:10px 0 4px}
+.meta{font-size:12px;color:var(--muted)}
+.btn{border-radius:12px;padding:12px 15px;background:var(--green);color:#fff;font-size:13px;font-weight:800}
+.btn.light{background:#fff;color:var(--green);border:1px solid #dbe6dd}
+.btn.ghost{background:#f2f4f2;color:var(--ink)}
+.btn:disabled{opacity:.45}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:15px}
+.weekday{text-align:center;padding:8px 0;border-radius:12px;background:#f8faf8;color:var(--muted);font-size:11px}
+.weekday b{display:block;color:var(--ink);font-size:13px;margin:5px 0}
+.weekday.active{background:var(--green);color:#dfece2}.weekday.active b{color:#fff}
+.weekday.has:after{content:"";display:block;width:4px;height:4px;background:var(--green);border-radius:50%;margin:4px auto 0}
+.weekday.active:after{background:var(--lime)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.stat{background:rgba(255,255,255,.68);padding:10px;border-radius:12px}
+.stat span{font-size:10px;color:var(--muted)}.stat b{display:block;font-size:18px;margin-top:4px}
+.exercise{display:flex;gap:11px;padding:12px 0;border-bottom:1px solid var(--line);align-items:center}
+.exercise:last-child{border:0}.exicon{width:42px;height:42px;border-radius:12px;background:#eff4ef;display:grid;place-items:center;font-size:19px;flex:none}
+.exname{font-size:13px;font-weight:800}.exmeta{font-size:11px;color:var(--muted);margin-top:4px}
+.exsets{margin-left:auto;font-size:11px;font-weight:750;color:var(--green);white-space:nowrap}
+.daycard{border:1px solid var(--line);border-radius:15px;padding:14px;margin:9px 0;background:white}
+.daycard.selected{border:1.5px solid var(--green);background:#fbfdfb}
+.progress{height:6px;background:#edf0ed;border-radius:9px;overflow:hidden}.progress i{display:block;height:100%;background:var(--green);width:0}
+.sectionhead{display:flex;align-items:center;justify-content:space-between;margin:21px 2px 8px}
+.sectionhead a{font-size:12px;color:var(--green);font-weight:700}
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:10;background:rgba(255,255,255,.97);border-top:1px solid var(--line);display:flex;justify-content:center;padding:7px 4px calc(7px + env(safe-area-inset-bottom));backdrop-filter:blur(14px)}
+.nav button{background:none;color:#89938d;flex:1;max-width:145px;font-size:10px;padding:5px 0}.nav button .ico{font-size:19px;display:block;margin-bottom:3px}.nav button.active{color:var(--green);font-weight:850}
+label{font-size:11px;color:var(--muted);display:block;margin:9px 0 5px}
+input,select,textarea{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font-size:13px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.warn{background:#fff7ef;border:1px solid #f0dfca;color:#815c32;border-radius:13px;padding:12px;font-size:12px;line-height:1.55}
+.notice{background:#f4f6f4;border-radius:12px;padding:11px;color:#69766e;font-size:11px;line-height:1.5}
+.listrow{padding:12px 0;border-bottom:1px solid var(--line)}.listrow:last-child{border:0}
+.kpi{font-size:24px;font-weight:850}.muted{color:var(--muted)}.tiny{font-size:10px}
+.modal{display:none;position:fixed;inset:0;background:#17231e77;z-index:30;align-items:flex-end;justify-content:center}.modal.show{display:flex}
+.sheet{width:100%;max-width:760px;max-height:88vh;overflow:auto;background:var(--bg);border-radius:20px 20px 0 0;padding:17px 16px calc(24px + env(safe-area-inset-bottom))}
+.sheethead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.close{border:0;background:#e9eeea;border-radius:50%;width:32px;height:32px;font-size:18px}
+.timer{display:flex;align-items:center;justify-content:space-between;background:#edf3ee;padding:14px;border-radius:14px;margin:12px 0}.timer strong{font-size:30px;color:var(--green);font-variant-numeric:tabular-nums}
+canvas{width:100%;height:160px}
+@media(min-width:600px){.app{padding-left:24px;padding-right:24px}.sheet{border-radius:20px}}
+
+.reminder-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.reminder-item:last-child{border:0}.reminder-time{font-size:18px;font-weight:850;font-variant-numeric:tabular-nums;min-width:58px}
+.reminder-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.reminder-actions button{font-size:11px;padding:7px 9px;border-radius:9px}
+.reminder-toast{position:fixed;left:14px;right:14px;bottom:90px;z-index:50;background:#20352a;color:#fff;border-radius:16px;padding:15px;box-shadow:0 8px 30px #0003;display:none}
+.reminder-toast.show{display:block}
+.switchline{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.reminder-modes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:9px}
+.reminder-mode{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:9px;padding:8px 4px;font-size:12px;font-weight:650}
+.reminder-mode.selected{background:#e8f1eb;border-color:#4b8664;color:#285b3d}
+.reminder-mode.selected.strong{background:#fff0e8;border-color:#d58b62;color:#98502c}
+
+
+.agenda-row{display:grid;grid-template-columns:58px 14px 1fr;gap:9px;align-items:start;padding:11px 0;border-bottom:1px solid var(--line)}
+.agenda-row:last-child{border:0}.agenda-time{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;padding-top:2px}
+.agenda-dot{width:10px;height:10px;border-radius:50%;background:#8aa895;margin:5px auto 0;box-shadow:0 0 0 4px #eaf1ec}
+.agenda-main{min-width:0}.agenda-title{font-weight:750}.agenda-desc{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
+.agenda-row.done .agenda-title{text-decoration:line-through;color:var(--muted)}
+.agenda-row.done .agenda-dot{background:#39835B}
+.agenda-btn{margin-top:7px;font-size:11px;padding:6px 9px;border-radius:8px}
+.snack-check{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.snack-check button{font-size:11px;padding:7px 9px}
+
+
+.meal-name{font-weight:800;margin-top:8px;font-size:15px}
+.meal-log{margin-top:9px;font-size:12px}
+
+
+.week-tabs{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin:13px 0}
+.week-tab{padding:8px 2px;border:1px solid var(--line);border-radius:9px;background:var(--surface);font-size:11px;color:var(--muted)}
+.week-tab.active{background:#e8f1eb;border-color:#4b8664;color:#285b3d;font-weight:800}
+.day-meal{padding:13px 0;border-bottom:1px solid var(--line)}
+.day-meal:last-child{border:0}.day-meal h3{margin:0 0 7px;font-size:14px}
+.meal-meta{font-size:12px;color:var(--muted);line-height:1.6;margin-top:5px}
+.shop-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.shop-row:last-child{border:0}.shop-row input{width:17px;height:17px}
+
+
+.budget-row{display:grid;grid-template-columns:1fr 92px;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.budget-row:last-child{border:0}.budget-row input{margin:0;min-width:0}
+.budget-total{display:flex;justify-content:space-between;align-items:center;background:var(--surface2,var(--surface));border-radius:12px;padding:12px;margin-top:12px}
+.budget-number{font-size:24px;font-weight:850;font-variant-numeric:tabular-nums}
+.analysis-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.analysis-stat{background:var(--surface2,var(--surface));border-radius:10px;padding:10px}
+.analysis-stat b{display:block;font-size:20px}.analysis-stat span{font-size:11px;color:var(--muted)}
+.analysis-bar{height:7px;background:var(--line);border-radius:8px;overflow:hidden;margin-top:6px}
+.analysis-bar span{display:block;height:100%;background:#4b8664}
+
+
+.session-hint{background:var(--surface);border:1px solid var(--line);padding:10px;border-radius:10px;margin:9px 0;font-size:12px;color:var(--muted);line-height:1.55}
+.exercise-tip{font-size:12px;color:var(--muted);line-height:1.55;margin-top:6px}
+.set-row{border-top:1px solid var(--line);padding-top:9px;margin-top:9px}
+\n
+.pwa-status{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:12px;margin:10px 0}
+.pwa-status small{color:var(--muted)}
+.test-mode-banner{display:none;background:#fff4df;border:1px solid #efd49a;color:#765315;border-radius:10px;padding:9px 12px;font-size:12px;margin:8px 0}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="logo">训练簿<small>TRAIN & LIFE</small></div><div class="date" id="dateLabel"></div></header>
+<div class="pwa-status"><span><b>训练簿</b> · <small id="appVersionLabel">V15 在线 PWA</small></span><span id="updateStatus">版本检查中…</span></div>
+<div class="test-mode-banner" id="testModeBanner">测试环境：所有记录与正式训练簿隔离，清理测试数据不会影响正式数据。</div>
+
+
+<section id="today" class="page active">
+ <div class="row between"><div><h1>今天</h1><div class="sub">训练、饮食与恢复，一页掌握。</div></div><span class="pill">TRAIN LOG</span></div>
+
+ <div class="card" id="dailyAgendaCard">
+  <div class="row between"><div><h2 style="margin:0">今日时间表</h2><div class="sub">按你的日常节奏自动排列</div></div><span class="pill" id="agendaProgress">0 / 5 完成</span></div>
+  <div id="dailyAgenda" style="margin-top:8px"></div>
+ </div>
+
+ <div class="card hero">
+  <div class="row between"><span class="pill">本周训练安排</span><span class="meta" id="weekRange"></span></div>
+  <div class="week" id="weekStrip"></div>
+  <div class="stats">
+   <div class="stat"><span>本周训练</span><b id="weekWorkouts">0 / 4</b></div>
+   <div class="stat"><span>完成组数</span><b id="weekSets">0</b></div>
+   <div class="stat"><span>训练容量</span><b id="weekVolume">0 kg</b></div>
+  </div>
+ </div>
+ <div class="sectionhead"><h2>今日计划</h2><a onclick="go('plans')">查看全部计划 ›</a></div>
+ <div class="card" id="todayCard"></div>
+ 
+
+ <div class="sectionhead"><h2>今日餐单</h2><a onclick="go('life');showLifePanel('food')">完整饮食计划 ›</a></div>
+ <div class="card" id="homeMealPlan">
+  <div class="listrow"><div class="row between"><b>09:00 早餐</b><span class="pill">已规划</span></div><div class="meal-name">燕麦粥 + 鸡蛋 + 香蕉</div><div class="sub">燕麦40–50g · 鸡蛋1–2个 · 香蕉半根至1根</div></div>
+  <div class="listrow"><div class="row between"><b>12:00 午餐</b><span class="pill">已规划</span></div><div class="meal-name">米饭 + 鸡肉/豆腐 + 熟蔬菜</div><div class="sub">米饭熟重150–200g · 鸡肉100–120g或豆腐150g · 熟蔬菜150g</div></div>
+  <div class="listrow"><div class="row between"><b>16:30 加餐询问</b><span class="pill">按饥饿程度</span></div><div class="sub">到点询问：已经吃过 / 现在不饿 / 有点饿想吃</div></div>
+  <div class="listrow"><div class="row between"><b>训练结束后 晚餐</b><span class="pill">动态生成</span></div><div class="sub">训练结束后生成晚餐任务；非训练日也正常安排晚餐。</div></div>
+  <button class="btn light" style="width:100%;margin-top:10px" onclick="go('life');showLifePanel('food')">查看做法、食材替换和采购清单</button>
+ </div>
+
+ <div class="sectionhead"><h2>今日生活</h2><a onclick="go('life')">记录 ›</a></div>
+ <div class="grid2">
+  <div class="card" style="margin:0"><b>饮食</b><div class="sub" style="margin-top:8px">早餐 · 午餐 · 晚餐</div><button class="btn light" style="width:100%;margin-top:12px" onclick="go('life')">查看饮食计划</button></div>
+  <div class="card" style="margin:0"><b>作息</b><div class="sub" style="margin-top:8px">睡眠 · 精力 · 恢复</div><button class="btn light" style="width:100%;margin-top:12px" onclick="go('life')">记录作息</button></div>
+ </div>
+<div class="sectionhead"><h2>本周计划</h2><a onclick="go('plans')">全部 ›</a></div>
+ <div id="homePlans"></div>
+ <div class="sectionhead"><h2>最近训练</h2><a onclick="go('log')">训练历史 ›</a></div>
+ <div class="card" id="recentTraining"></div>
+</section>
+
+<section id="plans" class="page">
+ <div class="row between"><div><h1>训练计划</h1><div class="sub">按训练日查看动作要点、记录每组重量、次数和主观用力程度。</div></div><button class="btn light" onclick="openNewPlan()">＋ 新建</button></div>
+ <div class="notice">每周4天：臀部A、上半身B、臀腿C、背部核心D。初始2周以熟悉动作、保留余力和稳定动作质量为主；不追求力竭或快速加重量。</div>
+ <div class="card">
+  <h2>每次训练流程</h2>
+  <div class="listrow"><b>训练前 5–8分钟</b><div class="sub">轻松步行或单车热身；再做目标关节活动和1–2组轻重量热身组。</div></div>
+  <div class="listrow"><b>正式训练</b><div class="sub">按计划完成动作。第一周可从每个动作建议组数的下限开始，主观用力程度约 RPE 6–7，保留约3–4次余力。</div></div>
+  <div class="listrow"><b>训练后 3–5分钟</b><div class="sub">轻松走动，记录训练感受；不需要强拉伸或忍痛拉伸。</div></div>
+  <div class="notice">若出现胸痛、明显心悸伴头晕、近乎晕厥、异常气短或黑便/出血等情况，停止训练并及时就医。遵循医生给出的个体限制优先于本计划。</div>
+ </div>
+ <div id="planList"></div>
+</section>
+
+<section id="log" class="page">
+ <div><h1>记录</h1><div class="sub">每组重量、次数与训练表现。</div></div>
+ <div class="notice" id="lockMsg">训练尚未开始。每次训练前请完成状态确认，并遵循医生给出的限制。</div>
+ <div id="activeLog" style="display:none">
+  <div class="card">
+   <div class="row between"><div><span class="pill" id="sessionDay"></span><h2 id="sessionTitle" style="margin:8px 0 3px"></h2><div class="sub" id="sessionMeta"></div></div><button class="btn ghost" onclick="finishSession()">结束</button></div>
+   <div class="timer"><div><div class="tiny muted">组间休息</div><strong id="timerDisplay">01:30</strong></div><div class="row"><button class="btn light" onclick="timerSet(60)">60s</button><button class="btn light" onclick="timerSet(90)">90s</button><button class="btn light" onclick="timerSet(120)">120s</button><button class="btn" onclick="timerStart()">开始</button></div></div>
+   <div class="card" id="sessionCheckin">
+    <h3>训练前状态</h3>
+    <div class="grid2">
+     <div><label>今日精力</label><select id="sessionEnergy"><option>不错</option><option>一般</option><option>偏疲惫</option></select></div>
+     <div><label>身体不适</label><select id="sessionSymptoms"><option>无明显不适</option><option>轻微不适</option><option>头晕 / 心慌</option><option>胸痛 / 异常气短</option></select></div>
+    </div>
+    <label>训练备注（选填）</label><input id="sessionNote" placeholder="例如：睡眠不足、医生给出的限制">
+    <div class="sub">如有头晕、心慌、胸痛或异常气短，今天不要开始训练；如症状明显或持续，及时就医。</div>
+   </div>
+   <div id="sessionExercises"></div>
+   <div class="card">
+    <h3>本次训练总结</h3>
+    <label>整体用力程度（RPE 1–10）</label>
+    <select id="sessionRpe"><option value="6">6 · 轻松，余力充足</option><option value="7" selected>7 · 有挑战，仍可再做约3次</option><option value="8">8 · 较吃力，仍可再做约2次</option><option value="9">9 · 接近极限</option><option value="10">10 · 力竭</option></select>
+    <label>训练后感受</label><select id="sessionAfter"><option>状态良好</option><option>正常疲劳</option><option>异常不适</option></select>
+    <label>训练总结备注</label><textarea id="sessionSummary" placeholder="动作感觉、需要调整的重量、疼痛或不适等"></textarea>
+   </div>
+  </div>
+ </div>
+ <div class="sectionhead"><h2>训练历史</h2></div><div class="card" id="historyList"></div>
+ <div class="sectionhead"><h2>训练复盘</h2></div><div class="card" id="sessionHistory"></div>
+</section>
+
+
+<section id="life" class="page">
+ <div><h1>生活</h1><div class="sub">饮食、作息与身体数据，支持长期训练。</div></div>
+ <div class="row" style="margin:12px 0;gap:7px">
+  <button class="btn light grow" onclick="showLifePanel('food')">饮食</button>
+  <button class="btn light grow" onclick="showLifePanel('routine')">作息</button>
+  <button class="btn light grow" onclick="showLifePanel('data')">身体数据</button>
+ </div>
+ <div id="foodPanel">
+ <div class="warn">你的饮食目标是整体增肌与恢复，不做减脂餐、不依赖昂贵补剂。由于你此前报告过黑便、反复腹泻和头晕，以下只是一般家常饮食框架，不是治疗方案；请先完成医疗评估，确认消化状况及营养需求。</div>
+ <div class="card">
+  <div class="row between"><h2>每日饮食框架</h2><span class="pill">可按胃口调整</span></div><div class="notice" style="margin:10px 0">省钱原则：优先鸡蛋、豆腐、豆浆、鸡肉、当季蔬菜和米面；一次采购、简单备餐，不需要蛋白粉或昂贵健身食品。</div>
+  <div class="listrow"><b>早餐</b><div class="sub">主食 + 蛋白质 + 水果或蔬菜</div><div class="tiny muted">例如：鸡蛋＋馒头/面包＋豆浆；按胃肠耐受选择</div></div>
+  <div class="listrow"><b>午餐</b><div class="sub">主食 + 一掌心蛋白质 + 蔬菜</div><div class="tiny muted">例如：米饭＋鸡蛋/豆腐/鸡肉＋当季熟蔬菜</div></div>
+  <div class="listrow"><b>加餐（按饥饿程度）</b><div class="sub">鸡蛋、豆浆、香蕉、馒头或当季水果（按耐受选择）</div></div>
+  <div class="listrow"><b>晚餐</b><div class="sub">主食 + 蛋白质 + 蔬菜，避免刻意不吃主食</div></div>
+  <div class="notice">不设减重目标、不强制计算热量。优先规律进食和足够营养；如果某些食物会明显诱发腹泻，先记录并与医生讨论，不要自行大范围忌口。</div>
+ </div>
+ <div class="card">
+  
+
+ <div class="card" id="weeklyMealCard">
+  <div class="row between"><h2>七天饮食计划</h2><span class="pill">1人份 · 家常省预算</span></div>
+  <div class="sub">每天三餐提供食材、参考份量和做法。份量按食欲及耐受调整；16:30加餐不强制。</div>
+  <div id="weeklyDayTabs" class="week-tabs"></div>
+  <div id="weeklyDayContent"></div>
+ </div>
+ <div class="card" id="weeklyShoppingCard">
+  <div class="row between"><h2>一周采购预算</h2><span class="pill">价格由你填写</span></div>
+  <div class="sub">填写实际购买金额，系统自动汇总预算。数量是初始估算，可按家中库存调整；不是实时市场报价。</div>
+  <div id="weeklyShoppingList"></div>
+  <div class="budget-total">
+   <div><div class="sub">预计采购合计</div><div class="budget-number" id="budgetTotal">¥0.00</div></div>
+   <div><div class="sub">已填写价格</div><b id="budgetCount">0 / 8 项</b></div>
+  </div>
+  <div class="sub" style="margin-top:8px">说明：按整包/整份实际支付金额填写；若家中已有食材，可将购买金额填为0。</div>
+ </div>
+ <div class="card" id="foodAnalysisCard">
+  <div class="row between"><h2>饮食执行分析</h2><span class="pill">计划 vs 实际</span></div>
+  <div class="sub">根据你保存的每日饮食记录，统计有填写的餐次。这里反映记录完整度，不等同于营养达标或健康评估。</div>
+  <div class="analysis-stats" id="foodAnalysisStats"></div>
+  <div id="foodAnalysisDetails"></div>
+ </div>
+ <div class="notice">这是一份普通家常饮食规划，不是腹泻或消化道疾病的治疗饮食。鉴于你此前报告近期黑便及长期腹泻，请尽快就医评估；在医生评估前不进行高蛋白增肌饮食、热量盈余或强制加餐。</div>
+  <h2>今日饮食记录</h2>
+  <label>日期</label><input type="date" id="foodDate">
+  <label>早餐</label><textarea id="foodBreakfast" placeholder="吃了什么、大概份量"></textarea>
+  <label>午餐</label><textarea id="foodLunch" placeholder="吃了什么、大概份量"></textarea>
+  <label>晚餐</label><textarea id="foodDinner" placeholder="吃了什么、大概份量"></textarea>
+  <label>加餐 / 饮水 / 咖啡等</label><textarea id="foodSnack" placeholder="记录加餐、饮水和可能影响胃肠的饮品"></textarea>
+  <label>饭后感受</label><select id="foodFeel"><option>无明显不适</option><option>腹胀</option><option>腹痛</option><option>腹泻</option><option>反酸 / 恶心</option><option>其他</option></select>
+  <button class="btn" style="width:100%;margin-top:12px" onclick="saveFood()">保存饮食记录</button>
+ </div>
+ <div class="card"><h2>最近饮食记录</h2><div id="foodHistory" class="sub">暂无记录。</div></div>
+</section>
+
+</div><div id="routinePanel" style="display:none">
+ <div><h1>作息</h1><div class="sub">先保证足够且规律的睡眠，再观察白天精力；不为了早起而压缩睡眠。</div></div>
+ <div class="card">
+  <h2>建议日程</h2>
+  <div class="listrow"><b>起床</b><span style="float:right;color:var(--green)">固定时间</span><div class="sub">先按目前08:30左右起床，保持相对固定；醒后观察是否仍明显困倦。</div></div>
+  <div class="listrow"><b>早餐</b><span style="float:right;color:var(--green)">起床后1–2小时内</span><div class="sub">尽量不要长期空腹。</div></div>
+  <div class="listrow"><b>午餐 / 晚餐</b><span style="float:right;color:var(--green)">规律安排</span><div class="sub">尽量固定用餐时间，避免暴饮暴食。</div></div>
+  <div class="listrow"><b>睡前放松</b><span style="float:right;color:var(--green)">睡前30–60分钟</span><div class="sub">减少强光和高刺激内容，给自己留出放松时间。</div></div>
+  <div class="listrow"><b>睡眠</b><span style="float:right;color:var(--green)">先维持约9.5小时</span><div class="sub">你目前约23:00入睡、08:30起床，约9.5小时。先不强行缩短睡眠；连续记录睡眠时长和醒后精神状态。如果睡够仍长期困倦，应就医评估，而不是靠咖啡或加练硬扛。</div></div>
+ </div>
+ <div class="card">
+  <h2>今日作息打卡</h2>
+  <label>日期</label><input type="date" id="routineDate">
+  <div class="grid2"><div><label>上床时间</label><input type="time" id="bedTime"></div><div><label>起床时间</label><input type="time" id="wakeTime"></div><div><label>实际睡眠（小时）</label><input type="number" step=".5" id="sleepHours" placeholder="例如 7.5"></div><div><label>午睡（分钟）</label><input type="number" id="napMinutes" placeholder="选填"></div></div>
+  <label>今天的精神状态</label><select id="energy"><option>不错</option><option>一般</option><option>疲惫</option><option>明显乏力</option></select>
+  <label>备注</label><textarea id="routineNote" placeholder="例如：夜间醒来、睡前咖啡、作息被打乱等"></textarea>
+  <button class="btn" style="width:100%;margin-top:12px" onclick="saveRoutine()">保存作息记录</button>
+ </div>
+ <div class="card"><h2>最近作息记录</h2><div id="routineHistory" class="sub">暂无记录。</div></div>
+</div>
+
+<div id="dataPanel" style="display:none">
+ <div><h1>数据</h1><div class="sub">用长期数据看见训练变化。</div></div>
+ <div class="card"><h2>训练统计</h2><div class="grid2"><div><span class="tiny muted">累计训练次数</span><div class="kpi" id="totalWorkouts">0</div></div><div><span class="tiny muted">累计完成组数</span><div class="kpi" id="totalSets">0</div></div><div><span class="tiny muted">累计训练容量</span><div class="kpi" id="totalVolume">0</div></div><div><span class="tiny muted">本周训练天数</span><div class="kpi" id="daysThisWeek">0</div></div></div></div>
+ <div class="card"><h2>身体数据</h2><div class="grid2"><div><label>日期</label><input type="date" id="measureDate"></div><div><label>体重 kg</label><input id="measureWeight" type="number" step=".1" placeholder="选填"></div><div><label>腰围 cm</label><input id="measureWaist" type="number" step=".1"></div><div><label>臀围 cm</label><input id="measureHip" type="number" step=".1"></div></div><button class="btn" style="width:100%;margin-top:12px" onclick="saveMeasure()">保存身体数据</button><div id="measureHistory" class="sub" style="margin-top:12px"></div></div>
+ <div class="card"><h2>体重趋势</h2><canvas id="chart" width="620" height="180"></canvas></div>
+</div>
+
+<section id="me" class="page">
+ <div><h1>我的</h1><div class="sub">个人设置、数据备份与健康备注。</div></div>
+
+ <div class="card" id="reminderSettings">
+  <div class="row between"><div><h2 style="margin:0">闹钟与提醒</h2><div class="sub">每个日程直接选择「不提醒 / 普通提醒 / 强提醒」，默认每天重复。</div></div><span class="pill">每日重复</span></div>
+  <div class="notice" style="margin-top:10px">提醒规则保存在当前浏览器。允许通知后，App 打开期间可按时提醒；如果浏览器或手机系统关闭了网页后台运行，不能保证像系统闹钟一样准时响铃。</div>
+  <div class="row" style="margin-top:12px">
+   <button class="btn grow" onclick="requestReminderPermission()">开启手机通知</button>
+   <button class="btn light grow" onclick="testReminder()">测试提醒</button>
+  </div>
+  <div class="sectionhead"><h3>日程提醒设置</h3><span class="sub">每项选择一种提醒方式</span></div>
+  <div id="reminderSettingsList"></div>
+ </div>
+
+ <div class="card"><h2>训练偏好</h2><div class="listrow">总体目标 <b style="float:right">整体增肌 · 身材比例</b></div><div class="listrow">体态与能力 <b style="float:right">体态 · 力量 · 体能</b></div><div class="listrow">训练频率 <b style="float:right">每周4天</b></div><div class="listrow">单次时长 <b style="float:right">45–60分钟</b></div><div class="listrow">训练场地 <b style="float:right">商业健身房</b></div></div>
+ <div class="card"><h2>训练启用设置</h2><div class="warn">请在完成必要的健康评估、确认适合进行渐进式力量训练后，再开启此功能。如医生建议暂缓运动，请保持关闭。</div><label class="row" style="font-size:12px;color:var(--ink)"><input type="checkbox" id="clearance" style="width:18px">我已确认目前身体状况适合渐进式力量训练</label><button class="btn light" style="width:100%;margin-top:10px" onclick="saveClearance()">保存设置</button></div>
+ <div class="card"><h2>健康备注</h2><div class="sub">用于记录就医、症状及医生给出的训练限制。</div><label>健康备注</label><textarea id="healthNote" placeholder="例如：医生建议避免的动作、训练强度限制……"></textarea><button class="btn light" style="width:100%;margin-top:10px" onclick="saveNote()">保存备注</button></div>
+ <div class="card"><h2>数据管理</h2><div class="row"><button class="btn light grow" onclick="exportData()">导出备份</button><label class="btn light grow" style="text-align:center;margin:0">导入备份<input type="file" accept="application/json" style="display:none" onchange="importData(event)"></label></div><div class="sub" style="margin-top:10px">数据保存在当前浏览器，请定期导出备份。</div></div>
+</section>
+</div>
+<nav class="nav">
+ <button class="active" data-tab="today" onclick="go('today')"><span class="ico">⌂</span>今天</button>
+ <button data-tab="plans" onclick="go('plans')"><span class="ico">▤</span>计划</button>
+ <button data-tab="log" onclick="go('log')"><span class="ico">＋</span>记录</button>
+ <button data-tab="life" onclick="go('life')"><span class="ico">◒</span>生活</button>
+ <button data-tab="me" onclick="go('me')"><span class="ico">◯</span>我的</button>
+</nav>
+<div class="modal" id="modal" onclick="if(event.target.id==='modal')closeModal()"><div class="sheet"><div class="sheethead"><h3 id="modalTitle">训练详情</h3><button class="close" onclick="closeModal()">×</button></div><div id="modalBody"></div></div></div>
+
+<div class="reminder-toast" id="reminderToast"></div>
+<script>
+const TEST_MODE=new URLSearchParams(location.search).get('mode')==='test';
+const KEY=TEST_MODE?'trainingBook_v3_test':'trainingBook_v3';
+const seed=[
+{id:'A',day:1,name:'臀部 A',focus:'臀大肌 · 臀中肌',duration:'45–60分钟',items:[['臀推 Hip Thrust',3,'8–12','120秒','臀大肌'],['罗马尼亚硬拉',3,'8–10','120秒','臀大肌 / 腘绳肌'],['绳索后踢腿',2,'12–15/侧','60秒','臀大肌'],['髋外展机',3,'15–20','60秒','臀中肌']]},
+{id:'B',day:2,name:'上半身 B',focus:'胸 · 肩 · 手臂',duration:'45–55分钟',items:[['坐姿器械推胸',3,'8–12','90秒','胸肌'],['上斜哑铃推胸',2,'10–12','90秒','胸肌'],['哑铃侧平举',3,'12–15','60秒','三角肌'],['绳索下压',2,'10–15','60秒','肱三头肌']]},
+{id:'C',day:4,name:'臀腿 C',focus:'臀部 · 腿后侧',duration:'45–55分钟',items:[['臀桥',3,'10–12','90秒','臀大肌'],['长步幅反向弓步',2,'8–10/侧','90秒','臀大肌 / 股四头肌'],['坐姿腿弯举',2,'10–15','60秒','腘绳肌'],['髋外展机',2,'12–15','60秒','臀中肌']]},
+{id:'D',day:5,name:'背部核心 D',focus:'背部 · 核心稳定',duration:'45–60分钟',items:[['高位下拉',3,'8–12','90秒','背阔肌'],['坐姿划船',3,'8–12','90秒','背部'],['反向飞鸟',2,'12–15','60秒','后三角'],['死虫式',2,'8–10/侧','45秒','核心'],['Pallof Press',2,'10–12/侧','45秒','核心']]}
+];
+let db=read();
+function read(){try{return JSON.parse(localStorage.getItem(KEY))||{plans:seed,logs:[],measures:[],allowed:false,note:''}}catch(e){return {plans:seed,logs:[],measures:[],allowed:false,note:''}}}
+if(!db.plans)db.plans=seed;if(!db.logs)db.logs=[];if(!db.sessions)db.sessions=[];if(!db.measures)db.measures=[];if(!db.foods)db.foods=[];if(!db.routines)db.routines=[];if(!db.agendaDone)db.agendaDone={};if(!db.shoppingPrices)db.shoppingPrices={};if(!db.snackChecks)db.snackChecks={};if(!db.dinnerTasks)db.dinnerTasks={};
+
+if(!db.v14ClearanceApplied){
+ db.allowed=true;
+ db.v14ClearanceApplied=true;
+ db.note=db.note||'';
+ localStorage.setItem(KEY,JSON.stringify(db));
+}
+if(!db.reminders){
+ db.reminders=[
+  {id:'wake',title:'起床',category:'作息',time:'08:30',intensity:'normal',enabled:true,repeat:'daily',lastFired:'',doneDate:'',snoozeUntil:0},
+  {id:'breakfast',title:'早餐',category:'饮食',time:'09:00',intensity:'normal',enabled:false,repeat:'daily',lastFired:'',doneDate:'',snoozeUntil:0},
+  {id:'lunch',title:'午餐',category:'饮食',time:'12:00',intensity:'normal',enabled:false,repeat:'daily',lastFired:'',doneDate:'',snoozeUntil:0},
+  {id:'snack-check',title:'下午加餐询问',category:'饮食',time:'16:30',intensity:'normal',enabled:false,repeat:'daily',lastFired:'',doneDate:'',snoozeUntil:0},
+  {id:'dinner',title:'晚餐（训练后生成）',category:'饮食',time:'21:00',intensity:'normal',enabled:false,repeat:'daily',lastFired:'',doneDate:'',snoozeUntil:0},
+  {id:'winddown',title:'睡前放松',category:'作息',time:'22:00',intensity:'normal',enabled:false,repeat:'daily',lastFired:'',doneDate:'',snoozeUntil:0},
+  {id:'bed',title:'准备睡觉',category:'作息',time:'23:00',intensity:'strong',enabled:true,repeat:'daily',lastFired:'',doneDate:'',snoozeUntil:0}
+ ];
+}
+
+function persist(){localStorage.setItem(KEY,JSON.stringify(db));render()}
+function today(){return new Date().toISOString().slice(0,10)}
+function dateObj(s){return new Date(s+'T12:00:00')}
+function go(id){
+ document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));
+ document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));
+ window.scrollTo(0,0);
+ if(id==='life'){showLifePanel('food');renderLifestyle();renderData();renderWeeklyMenu()}
+ if(id==='today')renderHome();
+}
+function planForDay(d){return db.plans.find(p=>p.day===d)}
+function weekStart(){let d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d}
+function weekDate(i){let d=weekStart();d.setDate(d.getDate()+i);return d}
+function weekLogs(){let s=weekStart().toISOString().slice(0,10),e=new Date(weekStart());e.setDate(e.getDate()+7);return db.logs.filter(l=>l.date>=s&&l.date<e.toISOString().slice(0,10))}
+function weekStrip(){let w=document.getElementById('weekStrip');w.innerHTML='';let names=['一','二','三','四','五','六','日'];for(let i=0;i<7;i++){let d=weekDate(i),ds=d.toISOString().slice(0,10),has=db.logs.some(l=>l.date===ds),el=document.createElement('div');el.className='weekday'+(ds===today()?' active':'')+(has?' has':'');el.innerHTML=`${names[i]}<b>${d.getDate()}</b>`;w.appendChild(el)}document.getElementById('weekRange').textContent=weekStart().toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'})+' 起'}
+
+function agendaKey(){return today()}
+function setAgendaDone(id){db.agendaDone[agendaKey()]=db.agendaDone[agendaKey()]||{};db.agendaDone[agendaKey()][id]=true;persist()}
+function answerSnack(value){
+ db.snackChecks[agendaKey()]=value;
+ if(value==='想吃一些'){db.agendaDone[agendaKey()]=db.agendaDone[agendaKey()]||{};db.agendaDone[agendaKey()].snack=true;}
+ persist();
+ showReminderToast(value==='想吃一些'?'可以安排一份小加餐，按胃肠耐受选择。':value);
+}
+function recordDinnerAfterTraining(){
+ const now=new Date(),t=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+ db.dinnerTasks[agendaKey()]={time:t,createdAt:Date.now(),done:false};
+ persist();
+ showReminderToast('训练结束时间已记录，已生成晚餐任务。');
+}
+function completeDinner(){db.dinnerTasks[agendaKey()]=db.dinnerTasks[agendaKey()]||{};db.dinnerTasks[agendaKey()].done=true;persist()}
+function renderDailyAgenda(){
+ const root=document.getElementById('dailyAgenda');if(!root)return;
+ const done=db.agendaDone[agendaKey()]||{},snack=db.snackChecks[agendaKey()];
+ const dinner=db.dinnerTasks[agendaKey()];
+ const items=[
+  {id:'wake',time:'08:30',title:'起床',desc:'起床、洗漱，按身体感受开始一天',action:`setAgendaDone('wake')`,btn:'标记完成'},
+  {id:'breakfast',time:'09:00',title:'早餐',desc:'建议：主食 + 蛋白质；按胃肠耐受选择',action:`setAgendaDone('breakfast')`,btn:'完成早餐'},
+  {id:'lunch',time:'12:00',title:'午餐',desc:'固定午餐时间；记录实际吃了什么',action:`setAgendaDone('lunch')`,btn:'完成午餐'},
+  {id:'snack',time:'16:30',title:'下午加餐询问',desc:'不强制加餐，到点询问是否饥饿、是否已经吃过',snack:true},
+  {id:'training',time:'按计划',title:'训练 / 恢复',desc:'训练功能暂待健康评估许可；今天可按恢复安排执行',action:`setAgendaDone('training')`,btn:'查看安排'},
+  {id:'dinner',time:dinner?dinner.time:'训练后',title:'晚餐',desc:dinner?'训练结束后生成 · 记录实际晚餐':'训练结束后自动生成晚餐任务；未训练日可自行记录晚餐',dinner:true},
+  {id:'winddown',time:'22:00',title:'睡前准备',desc:'放松、减少屏幕刺激',action:`setAgendaDone('winddown')`,btn:'标记完成'},
+  {id:'bed',time:'23:00',title:'睡觉',desc:'保持目前睡眠窗口，不刻意压缩睡眠',action:`setAgendaDone('bed')`,btn:'准备休息'}
+ ];
+ const countable=items.filter(x=>x.id!=='snack'&&x.id!=='training'&&x.id!=='dinner');
+ const count=countable.filter(x=>done[x.id]||(x.id==='dinner'&&dinner&&dinner.done)).length;
+ document.getElementById('agendaProgress').textContent=count+' / '+countable.length+' 完成';
+ root.innerHTML=items.map(x=>{
+  let isDone=!!done[x.id]||(x.id==='dinner'&&dinner&&dinner.done);
+  let extra='';
+  if(x.snack){
+   extra=`<div class="snack-check">
+    <button class="btn light" onclick="answerSnack('已经吃过了')">已经吃过</button>
+    <button class="btn light" onclick="answerSnack('现在不饿')">现在不饿</button>
+    <button class="btn" onclick="answerSnack('想吃一些')">有点饿，想吃</button>
+   </div>${snack?`<div class="agenda-desc">你的回答：${snack}</div>`:''}`;
+  } else if(x.dinner){
+   extra=dinner?`<button class="btn light agenda-btn" onclick="completeDinner()" ${dinner.done?'disabled':''}>${dinner.done?'晚餐已完成':'完成晚餐记录'}</button>`:`<div class="agenda-desc">完成训练后，在训练记录中结束训练，系统会自动生成晚餐任务。</div>`;
+  } else {
+   extra=`<button class="btn light agenda-btn" onclick="${x.action}">${x.btn}</button>`;
+  }
+  return `<div class="agenda-row ${isDone?'done':''}"><div class="agenda-time">${x.time}</div><div class="agenda-dot"></div><div class="agenda-main"><div class="agenda-title">${x.title} ${isDone?'✓':''}</div><div class="agenda-desc">${x.desc}</div>${extra}</div></div>`;
+ }).join('');
+}
+
+function renderHome(){renderDailyAgenda();let logs=weekLogs(),days=new Set(logs.map(l=>l.date)),sets=logs.length,vol=logs.reduce((s,l)=>s+(+l.kg||0)*(+l.reps||0),0);document.getElementById('weekWorkouts').textContent=days.size+' / 4';document.getElementById('weekSets').textContent=sets;document.getElementById('weekVolume').textContent=Math.round(vol)+' kg';weekStrip();
+ let dow=(new Date().getDay()+6)%7+1,p=planForDay(dow),tc=document.getElementById('todayCard');
+ if(p){tc.innerHTML=`<div class="row between"><span class="pill">今天 · ${['','周一','周二','周三','周四','周五','周六','周日'][dow]}</span><span class="pill lock">${db.allowed?'可开始':'待确认'}</span></div><div class="bigtitle">${p.name}</div><div class="meta">${p.focus}　·　${p.duration}　·　${p.items.length}个动作</div><div class="row" style="margin-top:15px"><button class="btn grow" onclick="startPlan('${p.id}')" ${db.allowed?'':'disabled'}>开始训练</button><button class="btn light" onclick="showPlan('${p.id}')">查看计划</button></div>`}
+ else tc.innerHTML=`<div class="pill">恢复 / 休息日</div><div class="bigtitle">今天没有安排训练</div><div class="meta">休息也是训练计划的一部分。</div><button class="btn light" style="margin-top:14px" onclick="go('plans')">查看本周计划</button>`;
+ document.getElementById('homePlans').innerHTML=db.plans.map(p=>`<div class="daycard"><div class="row between"><div><div class="exname">${['','周一','周二','周三','周四','周五','周六','周日'][p.day]} · ${p.name}</div><div class="exmeta">${p.focus} · ${p.items.length}个动作</div></div><button class="btn light" onclick="showPlan('${p.id}')">查看</button></div></div>`).join('');
+ let recent=db.logs.slice(-1)[0];document.getElementById('recentTraining').innerHTML=recent?`<b>${recent.date} · ${recent.planName||'训练记录'}</b><div class="sub" style="margin-top:5px">${recent.exercise}　${recent.kg||'—'}kg × ${recent.reps||'—'}次</div>`:'<div class="sub">还没有训练记录。完成训练后，这里会显示最近一次训练。</div>';
+}
+function renderPlans(){document.getElementById('planList').innerHTML=db.plans.map(p=>`<div class="daycard"><div class="row between"><div><span class="pill">${['','周一','周二','周三','周四','周五','周六','周日'][p.day]}</span><div class="bigtitle" style="font-size:18px">${p.name}</div><div class="meta">${p.focus} · ${p.duration}</div></div><button class="btn light" onclick="showPlan('${p.id}')">预览</button></div><div style="margin-top:9px">${p.items.map((x,i)=>`<div class="exercise"><div class="exicon">${i===0?'🏋️':i===1?'◈':'○'}</div><div class="grow"><div class="exname">${x[0]}</div><div class="exmeta">${x[4]||'训练动作'} · 休息 ${x[3]}</div></div><div class="exsets">${x[1]}组 × ${x[2]}</div></div>`).join('')}</div></div>`).join('')}
+function exerciseCue(name){
+ const cues={
+ '臀推 Hip Thrust':'肩胛靠稳凳边，脚掌踩实；抬起时收紧臀部，避免腰椎过度反弓。',
+ '罗马尼亚硬拉':'膝微屈，髋向后推；背部保持自然稳定，杠铃/哑铃贴近腿部。',
+ '绳索后踢腿':'骨盆保持稳定，小幅控制后伸；不要用腰部甩动。',
+ '髋外展机':'躯干稳定，膝盖向外推后缓慢回程，不借惯性。',
+ '坐姿器械推胸':'肩胛轻收，手腕保持中立；推起时不要耸肩或锁死肘关节。',
+ '上斜哑铃推胸':'肩胛稳定，哑铃沿舒适轨迹推起；避免肩前侧夹痛。',
+ '哑铃侧平举':'肘微屈，抬至肩部附近即可；不耸肩、不甩动。',
+ '绳索下压':'上臂贴近身体，肘部固定；控制回程。',
+ '臀桥':'肋骨收住，骨盆轻微后倾；臀部发力抬起，不用腰顶。',
+ '长步幅反向弓步':'向后迈步，前脚踩稳；膝盖沿脚尖方向，保持躯干稳定。',
+ '坐姿腿弯举':'髋部贴稳靠垫，屈膝发力；回程缓慢。',
+ '高位下拉':'先沉肩，再将肘向身体两侧下拉；避免大幅后仰。',
+ '坐姿划船':'躯干稳定，肘向后拉；不要用腰部前后摆动。',
+ '反向飞鸟':'肩部放松，手臂向两侧打开；重量轻、动作可控。',
+ '死虫式':'腰背保持稳定，交替伸展对侧手脚；控制幅度，不憋气。',
+ 'Pallof Press':'站姿稳固，核心抗旋转；双手向前推时躯干不转动。'
+ };
+ return cues[name]||'选择可控重量，动作平稳，保持自然呼吸；出现疼痛或异常不适立即停止。';
+}
+function showPlan(id){let p=db.plans.find(x=>x.id===id);document.getElementById('modalTitle').textContent=p.name+' · 训练计划';document.getElementById('modalBody').innerHTML=`<div class="sub">${p.focus} · ${p.duration}</div><div class="session-hint">建议强度：RPE 6–7，保留约3–4次余力。每组动作质量优先于重量。</div>${p.items.map((x,i)=>`<div class="exercise"><div class="exicon">${i+1}</div><div class="grow"><div class="exname">${x[0]}</div><div class="exmeta">${x[4]||''} · 组间休息 ${x[3]}</div><div class="exercise-tip">${exerciseCue(x[0])}</div></div><div class="exsets">${x[1]}组 × ${x[2]}</div></div>`).join('')}<div class="notice" style="margin-top:12px">每个动作先用轻重量熟悉轨迹；所有目标次数都能稳定完成且无异常不适，再考虑小幅增加重量。</div>`;document.getElementById('modal').classList.add('show')}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+function openNewPlan(){alert('下一轮将开放计划编辑：新增训练日、调整动作顺序、组数、次数和休息时间。当前先确认整体结构。')}
+let active=null,timer=null,remain=90;
+function restoreActiveSession(){
+ const saved=db.activeSession;
+ if(!saved||!saved.planId)return;
+ const plan=db.plans.find(p=>p.id===saved.planId);
+ if(!plan){db.activeSession=null;return}
+ active={plan,idx:0,sets:Array.isArray(saved.sets)?saved.sets:[],startedAt:saved.startedAt||Date.now(),
+  energy:saved.energy||'不错',symptoms:saved.symptoms||'无明显不适',preNote:saved.preNote||'',
+  sessionRpe:saved.sessionRpe||'7',after:saved.after||'状态良好',summary:saved.summary||''};
+}
+restoreActiveSession();
+function saveActiveDraft(){
+ if(!active)return;
+ active.energy=document.getElementById('sessionEnergy')?.value||active.energy||'不错';
+ active.symptoms=document.getElementById('sessionSymptoms')?.value||active.symptoms||'无明显不适';
+ active.preNote=document.getElementById('sessionNote')?.value??active.preNote??'';
+ active.sessionRpe=document.getElementById('sessionRpe')?.value||active.sessionRpe||'7';
+ active.after=document.getElementById('sessionAfter')?.value||active.after||'状态良好';
+ active.summary=document.getElementById('sessionSummary')?.value??active.summary??'';
+ db.activeSession={planId:active.plan.id,sets:active.sets,startedAt:active.startedAt,
+  energy:active.energy,symptoms:active.symptoms,preNote:active.preNote,
+  sessionRpe:active.sessionRpe,after:active.after,summary:active.summary};
+ localStorage.setItem(KEY,JSON.stringify(db));
+}
+function startPlan(id){
+ const p=db.plans.find(x=>x.id===id);if(!p){alert('没有找到这套训练计划，请刷新后重试。');return}
+ if(!db.allowed){alert('训练启用状态未确认，请检查「我的」页面。');return}
+ if(active&&!confirm('当前还有一条未结束的训练记录。要放弃它并开始新训练吗？'))return;
+ active={plan:p,idx:0,sets:[],startedAt:Date.now(),energy:'不错',symptoms:'无明显不适',preNote:'',sessionRpe:'7',after:'状态良好',summary:''};
+ db.activeSession={planId:p.id,sets:[],startedAt:active.startedAt,energy:'不错',symptoms:'无明显不适',preNote:'',sessionRpe:'7',after:'状态良好',summary:''};
+ localStorage.setItem(KEY,JSON.stringify(db));
+ renderSession();go('log');
+}
+function renderSession(){
+ document.getElementById('lockMsg').style.display='none';document.getElementById('activeLog').style.display='block';
+ document.getElementById('sessionEnergy').value=active.energy||'不错';
+ document.getElementById('sessionSymptoms').value=active.symptoms||'无明显不适';
+ document.getElementById('sessionNote').value=active.preNote||'';
+ document.getElementById('sessionRpe').value=active.sessionRpe||'7';
+ document.getElementById('sessionAfter').value=active.after||'状态良好';
+ document.getElementById('sessionSummary').value=active.summary||'';
+ let p=active.plan;document.getElementById('sessionDay').textContent='训练中';document.getElementById('sessionTitle').textContent=p.name;document.getElementById('sessionMeta').textContent=p.focus+' · 建议RPE 6–7';document.getElementById('sessionExercises').innerHTML=p.items.map((x,i)=>`<div class="card"><div class="row between"><div><b>${x[0]}</b><div class="exmeta">${x[1]}组 × ${x[2]}次 · 休息${x[3]}</div><div class="exercise-tip">${exerciseCue(x[0])}</div></div><span class="pill">${active.sets.filter(s=>s.i===i).length}/${x[1]}组</span></div>${Array.from({length:x[1]},(_,j)=>{let saved=active.sets.find(s=>s.i===i&&s.j===j)||{};return `<div class="set-row"><b>第${j+1}组</b><div class="grid2" style="margin-top:7px"><div><label>重量 kg</label><input id="kg-${i}-${j}" type="number" step=".5" placeholder="例如 10" value="${saved.kg||''}"></div><div><label>完成次数</label><input id="reps-${i}-${j}" type="number" placeholder="目标 ${x[2]}" value="${saved.reps||''}"></div></div><div class="grid2"><div><label>本组用力 RPE</label><select id="rpe-${i}-${j}"><option value="6">6 · 轻松</option><option value="7" selected>7 · 适中偏有挑战</option><option value="8">8 · 较吃力</option><option value="9">9 · 接近极限</option></select></div><div><label>备注（选填）</label><input id="setnote-${i}-${j}" placeholder="动作感受" value="${saved.note||''}"></div></div><button class="btn light" style="margin-top:7px;width:100%" onclick="saveSet(${i},${j})">保存第${j+1}组</button></div>`}).join('')}</div>`).join('')}
+function saveSet(i,j){
+ if(!active){alert('当前没有进行中的训练，请重新开始。');return}
+ const kg=document.getElementById(`kg-${i}-${j}`)?.value||'';
+ const reps=document.getElementById(`reps-${i}-${j}`)?.value||'';
+ if(!reps||Number(reps)<=0){alert('请填写有效的完成次数');return}
+ const rpe=document.getElementById(`rpe-${i}-${j}`)?.value||'7';
+ const note=document.getElementById(`setnote-${i}-${j}`)?.value||'';
+ active.sets=active.sets.filter(s=>!(s.i===i&&s.j===j));
+ active.sets.push({i,j,exercise:active.plan.items[i][0],kg,reps,rpe,note});
+ saveActiveDraft();
+ renderSession();
+}
+function finishSession(){if(!active){alert('当前没有进行中的训练。');return}if(!active.sets.length){alert('还没有记录任何组数。');return}
+ const symptoms=document.getElementById('sessionSymptoms').value;
+ if(symptoms==='胸痛 / 异常气短'||symptoms==='头晕 / 心慌'){alert('你选择了训练前存在异常症状。请结束本次训练，不要继续运动；如症状明显或持续，请及时就医。');return}
+ saveActiveDraft();
+ let date=today(),meta={sessionId:'s'+Date.now(),date,planId:active.plan.id,planName:active.plan.name,
+ energy:document.getElementById('sessionEnergy').value,symptoms,
+ preNote:document.getElementById('sessionNote').value,sessionRpe:document.getElementById('sessionRpe').value,
+ after:document.getElementById('sessionAfter').value,summary:document.getElementById('sessionSummary').value,
+ durationMin:Math.max(1,Math.round((Date.now()-active.startedAt)/60000))};
+ active.sets.forEach(s=>db.logs.push({...s,...meta}));
+ db.sessions=db.sessions||[];db.sessions.push(meta);
+ active=null;db.activeSession=null;
+ if(timer){clearInterval(timer);timer=null}remain=90;
+ document.getElementById('activeLog').style.display='none';document.getElementById('lockMsg').style.display='block';
+ persist();recordDinnerAfterTraining();go('today')}
+function timerSet(s){if(timer){clearInterval(timer);timer=null}remain=Math.max(0,Number(s)||0);timerRender()}
+function timerRender(){document.getElementById('timerDisplay').textContent=String(Math.floor(remain/60)).padStart(2,'0')+':'+String(remain%60).padStart(2,'0')}
+function timerStart(){
+ if(timer)return;
+ if(remain<=0)remain=90;
+ timerRender();
+ timer=window.setInterval(()=>{
+  remain=Math.max(0,remain-1);timerRender();
+  if(remain===0){window.clearInterval(timer);timer=null;alert('休息结束。确认状态后再开始下一组。')}
+ },1000);
+}
+function renderHistory(){const sh=document.getElementById('sessionHistory');if(sh){sh.innerHTML=(db.sessions||[]).slice().reverse().slice(0,12).map(x=>`<div class="listrow"><div class="row between"><b>${x.date} · ${x.planName}</b><span class="pill">RPE ${x.sessionRpe||'—'}</span></div><div class="sub">${x.durationMin||'—'}分钟 · 精力${x.energy||'—'} · 训练后${x.after||'—'}</div><div class="tiny muted">${x.summary||x.preNote||'暂无备注'}</div></div>`).join('')||'<div class="sub">完成训练后，这里会显示每次训练复盘。</div>'}document.getElementById('historyList').innerHTML=db.logs.length?db.logs.slice().reverse().slice(0,60).map(l=>`<div class="listrow"><div class="row between"><b>${l.date} · ${l.planName||''}</b><span class="pill">${l.exercise}</span></div><div class="meta" style="margin-top:5px">${l.kg||'—'} kg × ${l.reps}次 · RPE ${l.rpe||'—'} · 第${(l.j||0)+1}组</div></div>`).join(''):'<div class="sub">暂无训练记录。</div>'}
+function renderData(){let vol=db.logs.reduce((s,l)=>s+(+l.kg||0)*(+l.reps||0),0),days=new Set(weekLogs().map(l=>l.date));document.getElementById('totalWorkouts').textContent=new Set(db.logs.map(l=>l.date)).size;document.getElementById('totalSets').textContent=db.logs.length;document.getElementById('totalVolume').textContent=Math.round(vol)+' kg';document.getElementById('daysThisWeek').textContent=days.size;document.getElementById('measureHistory').innerHTML=db.measures.slice().reverse().slice(0,8).map(m=>`${m.date}　体重${m.weight||'—'}kg　腰${m.waist||'—'}cm　臀${m.hip||'—'}cm`).join('<br>')||'暂无身体数据';drawChart()}
+function saveMeasure(){let m={date:document.getElementById('measureDate').value||today(),weight:document.getElementById('measureWeight').value,waist:document.getElementById('measureWaist').value,hip:document.getElementById('measureHip').value};if(!m.weight&&!m.waist&&!m.hip){alert('请至少填写一项');return}db.measures.push(m);persist()}
+function drawChart(){let c=document.getElementById('chart');if(!c)return;let x=c.getContext('2d'),a=db.measures.filter(m=>m.weight);x.clearRect(0,0,c.width,c.height);x.strokeStyle='#e8ece8';for(let i=1;i<5;i++){x.beginPath();x.moveTo(20,i*32);x.lineTo(600,i*32);x.stroke()}if(!a.length){x.fillStyle='#7d8982';x.font='14px sans-serif';x.fillText('添加身体数据后显示趋势',200,90);return}let v=a.map(z=>+z.weight),lo=Math.min(...v)-.5,hi=Math.max(...v)+.5;if(lo===hi){lo-=1;hi+=1}x.strokeStyle='#376b52';x.lineWidth=3;x.beginPath();a.forEach((m,i)=>{let px=30+(560*(a.length===1?.5:i/(a.length-1))),py=145-(120*(+m.weight-lo)/(hi-lo));if(i)x.lineTo(px,py);else x.moveTo(px,py)});x.stroke();a.forEach((m,i)=>{let px=30+(560*(a.length===1?.5:i/(a.length-1))),py=145-(120*(+m.weight-lo)/(hi-lo));x.fillStyle='#376b52';x.beginPath();x.arc(px,py,4,0,7);x.fill();x.fillStyle='#202a25';x.font='12px sans-serif';x.fillText(m.weight+'kg',px-15,py-9)})}
+function saveClearance(){if(document.getElementById('clearance').checked&&!confirm('确认你已经完成必要评估，并确认目前身体状况适合渐进式力量训练？')){document.getElementById('clearance').checked=false;return}db.allowed=document.getElementById('clearance').checked;persist()}
+function saveNote(){db.note=document.getElementById('healthNote').value;persist();alert('已保存')}
+function exportData(){let a=document.createElement('a'),u=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'}));a.href=u;a.download='训练簿备份.json';a.click();URL.revokeObjectURL(u)}
+function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);persist();alert('导入成功')}catch(_){alert('文件格式不正确')}};r.readAsText(f)}
+
+function showLifePanel(which){
+ ['food','routine','data'].forEach(k=>{const el=document.getElementById(k+'Panel');if(el)el.style.display=(k===which?'block':'none')});
+ if(which==='routine')renderLifestyle();
+ if(which==='data')renderData();
+}
+
+function logMealToField(fieldId,text){
+ const el=document.getElementById(fieldId);if(!el)return;
+ el.value=el.value?el.value+'；'+text:text;
+ el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function saveFood(){let x={date:document.getElementById('foodDate').value||today(),breakfast:foodBreakfast.value,lunch:foodLunch.value,dinner:foodDinner.value,snack:foodSnack.value,feel:foodFeel.value};db.foods.push(x);persist();renderFoodAnalysis();alert('饮食记录已保存')}
+function saveRoutine(){let x={date:routineDate.value||today(),bed:bedTime.value,wake:wakeTime.value,sleep:sleepHours.value,nap:napMinutes.value,energy:energy.value,note:routineNote.value};db.routines.push(x);persist();alert('作息记录已保存')}
+function renderLifestyle(){document.getElementById('foodHistory').innerHTML=db.foods.slice().reverse().slice(0,7).map(x=>`<div class="listrow"><b>${x.date}</b><div class="tiny muted">早餐：${x.breakfast||'—'}；午餐：${x.lunch||'—'}；晚餐：${x.dinner||'—'}；饭后：${x.feel}</div></div>`).join('')||'暂无记录。';document.getElementById('routineHistory').innerHTML=db.routines.slice().reverse().slice(0,7).map(x=>`<div class="listrow"><b>${x.date}</b><div class="tiny muted">睡眠${x.sleep||'—'}小时 · 上床${x.bed||'—'} · 起床${x.wake||'—'} · 状态${x.energy}</div></div>`).join('')||'暂无记录。'}
+
+
+let reminderToastTimer=null;
+function localDateKey(){let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function reminderTimeLabel(t){return t||'--:--'}
+function reminderStatus(r){
+ const todayKey=localDateKey();
+ if(r.doneDate===todayKey)return '已完成';
+ if(r.snoozeUntil>Date.now())return '已延后';
+ if(r.lastFired===todayKey)return '已提醒';
+ return r.enabled?'待提醒':'未开启';
+}
+function renderReminderUI(){
+ const todayKey=localDateKey();
+ const active=db.reminders.filter(r=>r.enabled).sort((a,b)=>a.time.localeCompare(b.time));
+ const list=document.getElementById('todayReminders');
+ if(list){
+  list.innerHTML=active.map(r=>{
+   const done=r.doneDate===todayKey;
+   return `<div class="reminder-item"><div class="reminder-time">${r.time}</div><div class="grow"><b>${r.title}</b><div class="sub">${r.category} · ${r.intensity==='strong'?'强提醒':'普通提醒'} · ${reminderStatus(r)}</div><div class="reminder-actions">${done?'<button class="btn light" disabled>今日已完成</button>':`<button class="btn light" onclick="completeReminder('${r.id}')">完成</button><button class="btn ghost" onclick="snoozeReminder('${r.id}',10)">延后10分钟</button>`}</div></div></div>`;
+  }).join('') || '<div class="sub">还没有开启的提醒。可以到「我的 → 闹钟与提醒」添加。</div>';
+ }
+ const settings=document.getElementById('reminderSettingsList');
+ if(settings){
+  settings.innerHTML=db.reminders.slice().sort((a,b)=>a.time.localeCompare(b.time)).map(r=>{
+   const mode=!r.enabled?'off':(r.intensity==='strong'?'strong':'normal');
+   return `<div class="reminder-item" style="display:block">
+    <div class="row between">
+     <div class="row" style="gap:10px"><div class="reminder-time">${r.time}</div><div><b>${r.title}</b><div class="sub">${r.category} · 每天重复</div></div></div>
+    </div>
+    <div class="reminder-modes">
+     <button class="reminder-mode ${mode==='off'?'selected':''}" onclick="setReminderMode('${r.id}','off')">不提醒</button>
+     <button class="reminder-mode ${mode==='normal'?'selected':''}" onclick="setReminderMode('${r.id}','normal')">普通提醒</button>
+     <button class="reminder-mode ${mode==='strong'?'selected strong':''}" onclick="setReminderMode('${r.id}','strong')">强提醒</button>
+    </div>
+   </div>`;
+  }).join('') || '<div class="sub">暂无日程事项。</div>';
+ }
+ const state=document.getElementById('reminderPermissionState');
+ if(state){
+  state.textContent=('Notification' in window && Notification.permission==='granted')?'手机通知已允许':(('Notification' in window && Notification.permission==='denied')?'通知权限已拒绝':'通知未设置');
+ }
+}
+function toggleReminder(id,on){let r=db.reminders.find(x=>x.id===id);if(r){r.enabled=on;persist();renderReminderUI()}}
+function setReminderMode(id,mode){
+ const r=db.reminders.find(x=>x.id===id);if(!r)return;
+ r.enabled=mode!=='off';
+ if(mode==='normal')r.intensity='normal';
+ if(mode==='strong')r.intensity='strong';
+ r.snoozeUntil=0;
+ persist();renderReminderUI();
+}
+function openReminderEditor(id){
+ const r=id?db.reminders.find(x=>x.id===id):{id:'r'+Date.now(),title:'',category:'自定义',time:'12:00',intensity:'normal',enabled:true,repeat:'daily'};
+ document.getElementById('modalTitle').textContent=id?'编辑提醒':'添加提醒';
+ document.getElementById('modalBody').innerHTML=`
+  <label>提醒名称</label><input id="remTitle" maxlength="24" value="${r.title.replace(/"/g,'&quot;')}" placeholder="例如：喝水、早餐、睡前准备">
+  <label>事项分类</label><select id="remCategory"><option ${r.category==='饮食'?'selected':''}>饮食</option><option ${r.category==='作息'?'selected':''}>作息</option><option ${r.category==='训练'?'selected':''}>训练</option><option ${r.category==='健康记录'?'selected':''}>健康记录</option><option ${r.category==='自定义'?'selected':''}>自定义</option></select>
+  <label>提醒时间</label><input id="remTime" type="time" value="${r.time}">
+  <label>提醒强度</label><select id="remIntensity"><option value="normal" ${r.intensity==='normal'?'selected':''}>普通提醒：通知栏提示，可稍后处理</option><option value="strong" ${r.intensity==='strong'?'selected':''}>强提醒：持续显示通知（设备支持时）</option></select>
+  <label class="row" style="margin-top:12px;color:var(--ink)"><input id="remEnabled" type="checkbox" style="width:18px" ${r.enabled?'checked':''}>启用这个提醒</label>
+  <div class="notice" style="margin-top:10px">重复规则：每天自动重复。训练类提醒可以先建立，但训练开始提醒建议等身体评估许可后再启用。</div>
+  <div class="row" style="margin-top:14px"><button class="btn grow" onclick="saveReminder('${r.id}',${!!id})">保存提醒</button>${id?`<button class="btn ghost" onclick="deleteReminder('${r.id}')">删除</button>`:''}</div>`;
+ document.getElementById('modal').classList.add('show');
+}
+function saveReminder(id,editing){
+ const title=document.getElementById('remTitle').value.trim(),time=document.getElementById('remTime').value;
+ if(!title||!time){alert('请填写提醒名称和时间');return}
+ const obj={id,title,category:document.getElementById('remCategory').value,time,intensity:document.getElementById('remIntensity').value,enabled:document.getElementById('remEnabled').checked,repeat:'daily',lastFired:'',doneDate:'',snoozeUntil:0};
+ const index=db.reminders.findIndex(x=>x.id===id);
+ if(index>=0){obj.lastFired=db.reminders[index].lastFired||'';obj.doneDate=db.reminders[index].doneDate||'';obj.snoozeUntil=db.reminders[index].snoozeUntil||0;db.reminders[index]=obj}else db.reminders.push(obj);
+ closeModal();persist();renderReminderUI();
+}
+function deleteReminder(id){if(!confirm('确定删除这个提醒吗？'))return;db.reminders=db.reminders.filter(r=>r.id!==id);closeModal();persist();renderReminderUI()}
+function completeReminder(id){let r=db.reminders.find(x=>x.id===id);if(!r)return;r.doneDate=localDateKey();r.snoozeUntil=0;persist();renderReminderUI();showReminderToast('已完成：'+r.title)}
+function snoozeReminder(id,minutes){let r=db.reminders.find(x=>x.id===id);if(!r)return;r.snoozeUntil=Date.now()+minutes*60000;persist();renderReminderUI();showReminderToast(r.title+' 已延后'+minutes+'分钟')}
+function showReminderToast(message){
+ const el=document.getElementById('reminderToast');if(!el)return;
+ el.innerHTML='<b>训练簿提醒</b><div style="margin-top:5px">'+message+'</div><div class="reminder-actions"><button style="background:#fff;color:#20352a" onclick="document.getElementById(&quot;reminderToast&quot;).classList.remove(&quot;show&quot;)">知道了</button></div>';
+ el.classList.add('show');clearTimeout(reminderToastTimer);reminderToastTimer=setTimeout(()=>el.classList.remove('show'),12000);
+}
+async function requestReminderPermission(){
+ if(!('Notification' in window)){alert('当前浏览器不支持网页通知。请使用最新版 Chrome，并通过 HTTPS 网站访问。');return}
+ if(!window.isSecureContext){alert('手机通知需要通过 HTTPS 网站访问；本地文件预览不支持完整通知功能。');return}
+ try{let p=await Notification.requestPermission();renderReminderUI();alert(p==='granted'?'手机通知权限已开启。':'未获得通知权限，可以在浏览器网站设置中允许通知。')}
+ catch(e){alert('无法请求通知权限，请检查浏览器设置。')}
+}
+function fireReminder(r){
+ const message=r.title+' · '+r.time;
+ showReminderToast(message);
+ if('Notification' in window && Notification.permission==='granted'){
+  try{new Notification('训练簿 · '+(r.intensity==='strong'?'重要提醒':'日程提醒'),{body:message,tag:'trainingbook-'+r.id,requireInteraction:r.intensity==='strong',silent:false})}catch(e){}
+ }
+ r.lastFired=localDateKey();persist();
+}
+function checkReminders(){
+ const now=new Date(),key=localDateKey(),hm=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+ db.reminders.forEach(r=>{
+  if(!r.enabled||r.doneDate===key||r.id==='dinner')return;
+  if(r.snoozeUntil && r.snoozeUntil<=Date.now()){r.snoozeUntil=0;fireReminder(r);return}
+  if(r.time===hm && r.lastFired!==key)fireReminder(r);
+ });
+}
+function testReminder(){
+ const sample={title:'这是一条测试提醒',time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}),intensity:'strong'};
+ showReminderToast(sample.title+'：提醒显示正常');
+ if('Notification' in window && Notification.permission==='granted'){try{new Notification('训练簿 · 测试提醒',{body:'如果你看到了这条通知，浏览器通知权限正常。',requireInteraction:true})}catch(e){}}
+}
+
+
+const WEEK_MENU=[
+{day:'周一',meals:[
+['早餐','白粥（干米约40g）+ 水煮蛋1个 + 馒头半至1个','米洗净加水煮软；鸡蛋煮熟。'],
+['午餐','米饭（熟重约150g）+ 清蒸鸡肉（熟重约100g）+ 熟胡萝卜/西葫芦约150g','鸡肉蒸熟；蔬菜煮软或蒸熟。'],
+['晚餐','米饭（熟重约150g）+ 嫩豆腐约150g + 熟青菜约100g','豆腐蒸/煮；青菜煮软，少油少辣。']]},
+{day:'周二',meals:[
+['早餐','小米粥（干粮约40g）+ 鸡蛋1个 + 馒头半个','粥煮软；馒头蒸热。'],
+['午餐','米饭（熟重约150g）+ 鸡肉约100g + 蒸南瓜约150g','鸡肉煮熟切片；南瓜蒸熟。'],
+['晚餐','清汤面（干面约70g）+ 鸡蛋1个 + 熟青菜约100g','面条煮软，做清汤面，少油。']]},
+{day:'周三',meals:[
+['早餐','燕麦粥（燕麦约35g）+ 鸡蛋1个','燕麦煮透；若不耐受，换白粥。'],
+['午餐','米饭（熟重约150g）+ 蒸蛋（鸡蛋2个）+ 熟胡萝卜约100g','鸡蛋加水蒸熟；蔬菜煮软。'],
+['晚餐','米饭（熟重约150g）+ 豆腐约150g + 熟西葫芦约150g','豆腐与西葫芦炖煮，少调味。']]},
+{day:'周四',meals:[
+['早餐','白粥（干米约40g）+ 鸡蛋1个 + 吐司2片','鸡蛋煮熟；吐司按食欲选择。'],
+['午餐','米饭（熟重约150g）+ 土豆炖鸡（鸡肉熟重约100g）+ 熟胡萝卜','土豆、胡萝卜炖软，少油。'],
+['晚餐','馒头1个 + 蒸蛋（鸡蛋1–2个）+ 熟蔬菜约100g','蒸蛋与蔬菜搭配，避免过辣。']]},
+{day:'周五',meals:[
+['早餐','小米粥（干粮约40g）+ 鸡蛋1个 + 馒头半个','粥煮软，按胃肠耐受调整。'],
+['午餐','米饭（熟重约150g）+ 豆腐约180g + 熟南瓜/胡萝卜约150g','豆腐炖煮，蔬菜蒸软。'],
+['晚餐','鸡肉蔬菜面（干面约70g、鸡肉熟重约80g、熟菜少量）','清汤煮软，鸡肉充分煮熟。']]},
+{day:'周六',meals:[
+['早餐','燕麦粥约35g或白粥 + 鸡蛋1个','根据前几天耐受情况选择粥底。'],
+['午餐','米饭（熟重约150g）+ 鸡肉约100g + 熟时令蔬菜约150g','鸡肉蒸/煮熟；蔬菜少油炒软。'],
+['晚餐','米饭（熟重约150g）+ 蒸蛋2个 + 熟西葫芦约150g','蒸蛋与蔬菜搭配。']]},
+{day:'周日',meals:[
+['早餐','白粥（干米约40g）+ 鸡蛋1个 + 馒头半个','简单清淡，按食欲调整。'],
+['午餐','米饭（熟重约150g）+ 土豆炖豆腐（豆腐约150g）+ 熟胡萝卜','土豆与豆腐炖软。'],
+['晚餐','清汤面（干面约70g）+ 鸡蛋1个或鸡肉约80g + 熟青菜','清汤煮软，少油少辣。']]}
+];
+const WEEK_SHOP=[
+['大米','约1.2–1.5kg（含粥和米饭）'],['鸡蛋','约10–12个'],['鸡肉','约500–600g（生重）'],
+['豆腐','约500–600g'],['面条/挂面','约150–200g'],['燕麦/小米','各约100–150g，可按耐受二选一'],
+['馒头/吐司','约4–6份'],['胡萝卜、南瓜、土豆、西葫芦、青菜','每种少量采购，总量约1.5–2kg']
+];
+
+function saveShoppingPrice(index,value){
+ db.shoppingPrices=db.shoppingPrices||{};
+ const n=value===''?null:Number(value);
+ if(n!==null&&(!Number.isFinite(n)||n<0)){alert('请输入有效的非负金额');return}
+ db.shoppingPrices[index]={price:n};
+ persist();
+ renderWeeklyMenu();
+}
+function renderBudgetTotal(){
+ const prices=db.shoppingPrices||{};
+ const vals=Object.values(prices).map(x=>x.price).filter(x=>Number.isFinite(x));
+ const total=vals.reduce((a,b)=>a+b,0);
+ const totalEl=document.getElementById('budgetTotal'),countEl=document.getElementById('budgetCount');
+ if(totalEl)totalEl.textContent='¥'+total.toFixed(2);
+ if(countEl)countEl.textContent=vals.length+' / '+WEEK_SHOP.length+' 项';
+}
+function renderFoodAnalysis(){
+ const stats=document.getElementById('foodAnalysisStats'),details=document.getElementById('foodAnalysisDetails');
+ if(!stats||!details)return;
+ const logs=db.foods.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,7);
+ const meals=['breakfast','lunch','dinner'];
+ const labels=['早餐','午餐','晚餐'];
+ const total=logs.length*3;
+ const filled=logs.reduce((n,x)=>n+meals.filter(k=>(x[k]||'').trim().length>0).length,0);
+ const pct=total?Math.round(filled/total*100):0;
+ stats.innerHTML=`<div class="analysis-stat"><b>${logs.length}</b><span>最近记录天数</span></div><div class="analysis-stat"><b>${filled}/${total}</b><span>已填写餐次</span></div><div class="analysis-stat"><b>${pct}%</b><span>记录完整度</span></div>`;
+ details.innerHTML=logs.map(x=>{
+  const n=meals.filter(k=>(x[k]||'').trim().length>0).length;
+  return `<div class="listrow"><div class="row between"><b>${x.date}</b><span class="sub">${n}/3 餐有记录</span></div><div class="analysis-bar"><span style="width:${Math.round(n/3*100)}%"></span></div><div class="tiny muted">${labels.map((l,i)=>l+'：'+((x[meals[i]]||'').trim()?'已记录':'未记录')).join(' · ')}</div></div>`;
+ }).join('')||'<div class="sub">还没有饮食记录。保存早餐、午餐或晚餐后，这里会自动生成执行分析。</div>';
+}
+
+function renderWeeklyMenu(){
+ const tabs=document.getElementById('weeklyDayTabs'),content=document.getElementById('weeklyDayContent'),shop=document.getElementById('weeklyShoppingList');
+ if(!tabs||!content||!shop)return;
+ let selected=Number(localStorage.getItem('tb_weekday')||0);if(selected<0||selected>6)selected=0;
+ tabs.innerHTML=WEEK_MENU.map((d,i)=>`<button class="week-tab ${i===selected?'active':''}" onclick="selectWeekDay(${i})">${d.day}</button>`).join('');
+ const d=WEEK_MENU[selected];
+ content.innerHTML=d.meals.map(m=>`<div class="day-meal"><h3>${m[0]}</h3><b>${m[1]}</b><div class="meal-meta">做法：${m[2]}</div><button class="btn light meal-log" onclick="copyWeeklyMealToLog('${m[0]}','${(m[1]+'；做法：'+m[2]).replace(/'/g,"\\'")}')">填入今日饮食记录</button></div>`).join('')+
+ `<div class="day-meal"><h3>16:30 加餐</h3><div>不强制安排。只有确实饥饿且食物耐受时，选择少量熟悉的食物；不饿可不吃。</div></div>`;
+ shop.innerHTML=WEEK_SHOP.map((x,i)=>{
+  const saved=(db.shoppingPrices||{})[i]||{};
+  return `<div class="budget-row"><div><b>${x[0]}</b><div class="sub">${x[1]}</div></div><input aria-label="${x[0]}实际购买金额" type="number" min="0" step="0.01" placeholder="金额 ¥" value="${saved.price??''}" onchange="saveShoppingPrice(${i},this.value)"></div>`;
+ }).join('');
+ renderFoodAnalysis();
+ renderBudgetTotal();
+}
+function selectWeekDay(i){localStorage.setItem('tb_weekday',String(i));renderWeeklyMenu()}
+function copyWeeklyMealToLog(type,text){
+ const map={'早餐':'foodBreakfast','午餐':'foodLunch','晚餐':'foodDinner'},el=document.getElementById(map[type]);if(!el)return;
+ el.value=el.value?el.value+'；'+text:text;
+ el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function render(){
+ renderHome();renderPlans();renderHistory();renderData();renderLifestyle();renderReminderUI();renderWeeklyMenu();
+ document.getElementById('clearance').checked=!!db.allowed;document.getElementById('healthNote').value=db.note||'';
+ if(active){document.getElementById('lockMsg').style.display='none';document.getElementById('activeLog').style.display='block';renderSession()}
+ else{document.getElementById('activeLog').style.display='none';document.getElementById('lockMsg').style.display='block'}
+}
+['sessionEnergy','sessionSymptoms','sessionNote','sessionRpe','sessionAfter','sessionSummary'].forEach(id=>{
+ const el=document.getElementById(id);if(el)el.addEventListener('change',()=>saveActiveDraft());
+});
+document.getElementById('dateLabel').textContent=new Date().toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'short'});document.getElementById('measureDate').value=today();document.getElementById('foodDate').value=today();document.getElementById('routineDate').value=today();render();
+setInterval(checkReminders,15000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkReminders()});
+
+</script>
+
+<script>
+(function(){
+ const testMode=new URLSearchParams(location.search).get('mode')==='test';
+ const banner=document.getElementById('testModeBanner');
+ if(testMode&&banner)banner.style.display='block';
+ const status=document.getElementById('updateStatus');
+ if(!('serviceWorker' in navigator) || !(location.protocol==='https:' || location.hostname==='localhost' || location.hostname==='127.0.0.1')){
+   if(status)status.textContent='本地预览 · 部署 HTTPS 后启用自动更新';
+   return;
+ }
+ let refreshing=false;
+ navigator.serviceWorker.addEventListener('controllerchange',()=>{
+   if(refreshing)return;refreshing=true;
+   if(status)status.textContent='正在载入新版…';
+   location.reload();
+ });
+ window.addEventListener('load',async()=>{
+   try{
+     const reg=await navigator.serviceWorker.register('./sw.js',{scope:'./'});
+     if(status)status.textContent='自动更新已启用';
+     reg.update().catch(()=>{});
+     reg.addEventListener('updatefound',()=>{
+       const worker=reg.installing;
+       if(!worker)return;
+       worker.addEventListener('statechange',()=>{
+         if(worker.state==='installed' && navigator.serviceWorker.controller && status)
+           status.textContent='发现新版，正在更新…';
+       });
+     });
+   }catch(e){if(status)status.textContent='更新服务暂不可用'}
+ });
+})();
+</script>
+
+</body></html>

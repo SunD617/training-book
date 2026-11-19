@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>训练簿自动验收</title>
+<style>
+body{font:15px system-ui,-apple-system,"Segoe UI",sans-serif;background:#f5f6f4;color:#20251f;margin:0;padding:22px}
+main{max-width:720px;margin:auto;background:white;border-radius:18px;padding:22px;box-shadow:0 8px 30px #0001}
+h1{font-size:22px;margin:0 0 6px}.muted{color:#69736b;font-size:13px}
+button{border:0;border-radius:10px;padding:12px 16px;background:#315f45;color:white;font-weight:700;font-size:14px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid #e8ebe7}
+.pass{color:#267447;font-weight:700}.fail{color:#b33b32;font-weight:700}
+iframe{position:absolute;width:1px;height:1px;left:-10000px;border:0}
+</style></head><body><main>
+<h1>训练簿 · 自动化验收</h1>
+<p class="muted">只使用独立测试数据 trainingBook_v3_test，不读取、不修改正式训练簿数据。</p>
+<button id="run">运行一键验收</button> <button id="clear" style="background:#68736b">清理测试数据</button>
+<div id="results" aria-live="polite"></div>
+<iframe id="app" src="./index.html?mode=test"></iframe>
+</main>
+<script>
+const results=document.getElementById('results');
+const frame=document.getElementById('app');
+const KEY='trainingBook_v3_test';
+function line(name,ok,detail=''){const el=document.createElement('div');el.className='row';el.innerHTML='<span>'+name+(detail?' <small class="muted">'+detail+'</small>':'')+'</span><span class="'+(ok?'pass':'fail')+'">'+(ok?'通过':'失败')+'</span>';results.appendChild(el);}
+function wait(ms){return new Promise(r=>setTimeout(r,ms))}
+function loadFrame(){return new Promise((resolve,reject)=>{frame.onload=()=>resolve(frame.contentWindow);frame.onerror=reject;frame.src='./index.html?mode=test&run='+Date.now()})}
+document.getElementById('clear').onclick=()=>{localStorage.removeItem(KEY);results.innerHTML='';line('测试数据',true,'已清理；正式数据未受影响')};
+document.getElementById('run').onclick=async()=>{
+ const btn=document.getElementById('run');btn.disabled=true;results.innerHTML='';
+ try{
+  const productionBefore=localStorage.getItem('trainingBook_v3');
+  localStorage.removeItem(KEY);
+  let w=await loadFrame();
+  w.alert=()=>{};w.confirm=()=>true;
+  const checks=[];
+  checks.push(['测试环境隔离',!!JSON.parse(localStorage.getItem(KEY)||'null'),'测试数据空间已创建']);
+  w.startPlan('A');await wait(150);
+  checks.push(['开始训练',w.document.getElementById('activeLog').style.display!=='none','训练记录面板已打开']);
+  w.document.getElementById('kg-0-0').value='10';
+  w.document.getElementById('reps-0-0').value='10';
+  w.document.getElementById('rpe-0-0').value='7';
+  w.saveSet(0,0);await wait(100);
+  let d=JSON.parse(localStorage.getItem(KEY)||'{}');
+  checks.push(['单组保存',!!(d.activeSession&&d.activeSession.sets&&d.activeSession.sets.length===1),'重量、次数、RPE 已保存']);
+  await loadFrame();w=frame.contentWindow;w.alert=()=>{};
+  d=JSON.parse(localStorage.getItem(KEY)||'{}');
+  checks.push(['训练中刷新恢复',!!(d.activeSession&&d.activeSession.sets&&d.activeSession.sets.length===1)&&w.document.getElementById('activeLog').style.display!=='none','未完成训练与已记录组数恢复']);
+  w.timerSet(2);w.timerStart();await wait(2400);
+  checks.push(['休息计时器',w.document.getElementById('timerDisplay').textContent==='00:00','2 秒倒计时已完成']);
+  w.finishSession();await wait(200);
+  d=JSON.parse(localStorage.getItem(KEY)||'{}');
+  checks.push(['结束训练与历史写入',!!(d.logs&&d.logs.length===1&&d.sessions&&d.sessions.length===1),'训练组数和训练总结已写入']);
+  await loadFrame();w=frame.contentWindow;w.alert=()=>{};
+  d=JSON.parse(localStorage.getItem(KEY)||'{}');
+  checks.push(['刷新后数据保留',!!(d.logs&&d.logs.length===1&&d.sessions&&d.sessions.length===1),'刷新后仍可读取历史记录']);
+  checks.push(['正式数据隔离',localStorage.getItem('trainingBook_v3')===productionBefore,'正式数据与测试数据完全隔离']);
+  checks.forEach(x=>line(x[0],x[1],x[2]));
+  const n=checks.filter(x=>x[1]).length;
+  line('总结果',n===checks.length,n+'/'+checks.length+' 项通过');
+ }catch(e){line('自动验收运行',false,String(e))}
+ btn.disabled=false;
+};
+</script></body></html>
