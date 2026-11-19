@@ -75,6 +75,12 @@ input,select,textarea{width:100%;padding:11px;border:1px solid var(--line);borde
 .exercise-teach-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .exercise-teach-name{font-size:19px;font-weight:850}
 .exercise-prescription{font-size:11px;color:var(--green);font-weight:800;white-space:nowrap;background:#edf4ef;border-radius:20px;padding:7px 9px}
+.exercise-image-pair{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:100%;padding:10px}
+.exercise-image-card{min-width:0;background:#fff;border:1px solid #e6ebe7;border-radius:11px;overflow:hidden}
+.exercise-image-card img{display:block;width:100%;height:190px;object-fit:contain;background:#fff}
+.exercise-image-caption{padding:7px 9px;font-size:11px;font-weight:750;color:#52685a;text-align:center;border-top:1px solid #edf0ed}
+.exercise-image-credit{font-size:10px;color:var(--muted);line-height:1.5;margin-top:5px}
+@media(max-width:620px){.exercise-image-pair{gap:6px;padding:7px}.exercise-image-card img{height:145px}.exercise-image-caption{font-size:10px;padding:6px 4px}}
 .exercise-media-stage{margin:13px 0;border-radius:13px;min-height:155px;display:grid;place-items:center;background:linear-gradient(145deg,#f0f4f0,#e7ede8);overflow:hidden}
 .exercise-media-stage img{display:block;width:100%;max-height:270px;object-fit:contain;background:#fff}
 .exercise-media-placeholder{padding:22px;text-align:center;color:#52675a}
@@ -160,7 +166,7 @@ canvas{width:100%;height:160px}
 <body>
 <div class="app">
 <header><div class="logo">训练簿<small>TRAIN & LIFE</small></div><div class="date" id="dateLabel"></div></header>
-<div class="pwa-status"><span><b>训练簿</b> · <small id="appVersionLabel">V15.4 原生动作教学版</small></span><span id="updateStatus">版本检查中…</span></div>
+<div class="pwa-status"><span><b>训练簿</b> · <small id="appVersionLabel">V15.5 全动作示意图版</small></span><span id="updateStatus">版本检查中…</span></div>
 <div class="test-mode-banner" id="testModeBanner">测试环境：所有记录与正式训练簿隔离，清理测试数据不会影响正式数据。</div>
 
 
@@ -551,6 +557,31 @@ const exerciseTeaching={
  '死虫式':{muscle:'腹横肌、腹直肌及核心稳定肌群',setup:'仰卧，髋膝抬起约90度，双臂指向天花板。',steps:['轻收腹部，让腰背保持稳定贴近地面','缓慢伸出一侧手臂与对侧腿','在腰背仍稳定的范围内伸展','回到起点，换另一侧交替进行'],breath:'伸展时缓慢呼气；回收时吸气。',errors:'腰部明显拱起、动作太快、伸展幅度超过核心控制能力。',alternative:'脚跟点地死虫式、单腿抬放。'},
  'Pallof Press':{muscle:'腹斜肌及抗旋转核心肌群',setup:'侧对拉力器或弹力带固定点，双手握把置于胸前。',steps:['双脚站稳，膝盖微屈，骨盆朝前','双手从胸前缓慢向前推出','抵抗拉力，不让躯干向固定点旋转','停顿后收回胸前，完成一侧再换边'],breath:'推出时呼气；收回时吸气。',errors:'身体跟着拉力旋转、耸肩、站距太窄导致失衡。',alternative:'弹力带Pallof Press、跪姿抗旋转推。'}
 };
+const exerciseVisuals={
+ '臀推 Hip Thrust':'Barbell_Hip_Thrust',
+ '绳索后踢腿':'One-Legged_Cable_Kickback',
+ '髋外展机':'Thigh_Abductor',
+ '坐姿器械推胸':'Machine_Bench_Press',
+ '上斜哑铃推胸':'Incline_Dumbbell_Press',
+ '哑铃侧平举':'Side_Lateral_Raise',
+ '绳索下压':'Triceps_Pushdown',
+ '臀桥':'Butt_Lift_Bridge',
+ '长步幅反向弓步':'Dumbbell_Rear_Lunge',
+ '坐姿腿弯举':'Seated_Leg_Curl',
+ '高位下拉':'Wide-Grip_Lat_Pulldown',
+ '坐姿划船':'Seated_Cable_Rows',
+ '反向飞鸟':'Reverse_Flyes',
+ '死虫式':'Dead_Bug',
+ 'Pallof Press':'Pallof_Press'
+};
+function exerciseImagePair(name){
+ const folder=exerciseVisuals[name];if(!folder)return '';
+ const base='https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/'+encodeURIComponent(folder);
+ return `<div class="exercise-image-pair">
+  <div class="exercise-image-card"><img src="${base}/0.jpg" alt="${name} 起始姿势" loading="lazy" onerror="this.closest('.exercise-image-card').style.display='none'"><div class="exercise-image-caption">起始姿势</div></div>
+  <div class="exercise-image-card"><img src="${base}/1.jpg" alt="${name} 动作过程" loading="lazy" onerror="this.closest('.exercise-image-card').style.display='none'"><div class="exercise-image-caption">动作过程 / 目标位置</div></div>
+ </div><div class="exercise-image-credit">动作图片：Free Exercise DB · Public Domain（Unlicense）</div>`;
+}
 function teachingFor(name){
  const base=exerciseTeaching[name]||{muscle:'按动作目标肌群',setup:'先调整器械并选择轻重量，确保身体稳定。',steps:['摆好稳定起始姿势','沿可控制的轨迹完成动作','缓慢还原，保持自然呼吸'],breath:'发力时呼气；还原时吸气。',errors:'避免借惯性、憋气和疼痛下强行完成。',alternative:'选择相同目标肌群、自己能稳定控制的替代动作。'};
  return base;
@@ -567,8 +598,8 @@ function renderPlanTeaching(){
  const selected=p.items[window.currentTeachingIndex];if(!selected)return;
  const [name,sets,reps,rest,muscle]=selected;const t=teachingFor(name);
  const steps=t.steps.map((s,i)=>`<div class="exercise-step"><span class="exercise-step-num">${i+1}</span><span>${s}</span></div>`).join('');
- const media=t.gif?`<div class="exercise-media-stage"><img src="${t.gif}" alt="${name}动态动作演示" loading="lazy"></div><div class="exercise-video-note">动态演示：${t.source||'动作示范资源'}。若图片未加载，下面仍有完整分步骤说明。</div>`:
-  `<div class="exercise-media-stage"><div class="exercise-media-placeholder"><span class="figure">◉</span><b>动作分解教学</b><p>先看准备姿势，再按下方步骤完成动作。当前动作暂未接入经过验证的动态视频，避免展示错误示范。</p></div></div>`;
+ const media=t.gif?`<div class="exercise-media-stage"><img src="${t.gif}" alt="${name}动态动作演示" loading="lazy"></div><div class="exercise-video-note">动态演示：${t.source||'动作示范资源'}。下面同时保留动作步骤说明。</div>`:
+  (exerciseImagePair(name)||`<div class="exercise-media-stage"><div class="exercise-media-placeholder"><span class="figure">◉</span><b>动作分解教学</b><p>该动作暂未匹配到可确认的图片示范，请参考下方分步骤说明。</p></div></div>`);
  const sourceLink=t.gif?'https://planworkouts.com/exercise/barbell-romanian-deadlift/':(exerciseMedia[name]?.guide||'');
  document.getElementById('modalBody').innerHTML=`<div class="exercise-modal-head"><div><div class="exercise-modal-kicker">TRAINING GUIDE · ${window.currentTeachingIndex+1}/${p.items.length}</div><div class="exercise-modal-title">${p.name}</div><div class="exercise-modal-sub">${p.focus} · ${p.duration} · 建议 RPE 6–7</div></div><span class="pill">${p.items.length} 个动作</span></div>
  <div class="exercise-teach-layout">
