@@ -20,17 +20,21 @@ iframe{position:absolute;width:1px;height:1px;left:-10000px;border:0}
 const results=document.getElementById('results');
 const frame=document.getElementById('app');
 const KEY='trainingBook_v3_test';
-function line(name,ok,detail=''){const el=document.createElement('div');el.className='row';el.innerHTML='<span>'+name+(detail?' <small class="muted">'+detail+'</small>':'')+'</span><span class="'+(ok?'pass':'fail')+'">'+(ok?'通过':'失败')+'</span>';results.appendChild(el);}
+function line(name,ok,detail=''){const el=document.createElement('div');el.className='row';const left=document.createElement('span');left.textContent=name+(detail?' · '+detail:'');const right=document.createElement('span');right.className=ok?'pass':'fail';right.textContent=ok?'通过':'失败';el.append(left,right);results.appendChild(el);}
 function wait(ms){return new Promise(r=>setTimeout(r,ms))}
 function loadFrame(){return new Promise((resolve,reject)=>{frame.onload=()=>resolve(frame.contentWindow);frame.onerror=reject;frame.src='./index.html?mode=test&run='+Date.now()})}
 document.getElementById('clear').onclick=()=>{localStorage.removeItem(KEY);results.innerHTML='';line('测试数据',true,'已清理；正式数据未受影响')};
 document.getElementById('run').onclick=async()=>{
  const btn=document.getElementById('run');btn.disabled=true;results.innerHTML='';
+ let stage='初始化测试页面';
  try{
+  stage='清理隔离测试数据';
   const productionBefore=localStorage.getItem('trainingBook_v3');
   localStorage.removeItem(KEY);
+  stage='加载训练簿测试环境';
   let w=await loadFrame();
   w.alert=()=>{};w.confirm=()=>true;
+  stage='检查基础数据与日期函数';
   const checks=[];
   // 测试环境明确完成训练启用确认；仅修改隔离的 trainingBook_v3_test。
   w.__trainingBookTest.getDb().allowed=true;
@@ -42,25 +46,31 @@ document.getElementById('run').onclick=async()=>{
   checks.push(['备份结构校验',w.validateBackupData(validBackup).ok,'有效备份结构可通过']);
   checks.push(['损坏备份拦截',!w.validateBackupData({plans:[],logs:'bad'}).ok,'无效结构不能覆盖正式数据']);
   checks.push(['测试环境隔离',!!JSON.parse(localStorage.getItem(KEY)||'null'),'测试数据空间已创建']);
+  stage='打开训练前动作确认';
   w.startPlan('A');await wait(100);
   checks.push(['训练前动作确认',w.document.getElementById('modal').classList.contains('show')&&w.document.getElementById('modalTitle').textContent.includes('训练前动作确认'),'开始训练前先确认动作']);
   if(!w.document.getElementById('modal').classList.contains('show'))throw new Error('训练前确认弹窗未打开：请检查测试授权或训练计划初始化');
+  stage='替换动作并确认开练';
   w.setPrestartExercise(0,'臀桥');await wait(50);
   checks.push(['替代动作预选',w.__trainingBookTest.getDraft()[0].exercise==='臀桥','本次训练动作已替换，原计划不变']);
   w.confirmStartPlan();await wait(150);
   checks.push(['确认后开始训练',w.document.getElementById('activeLog').style.display!=='none'&&w.__trainingBookTest.getActive().plan.items[0][0]==='臀桥','训练记录面板使用预选动作']);
+  stage='记录第一组训练数据';
   w.document.getElementById('kg-0-0').value='10';
   w.document.getElementById('reps-0-0').value='10';
   w.document.getElementById('rpe-0-0').value='7';
   w.saveSet(0,0);await wait(100);
   let d=JSON.parse(localStorage.getItem(KEY)||'{}');
   checks.push(['单组保存',!!(d.activeSession&&d.activeSession.sets&&d.activeSession.sets.length===1),'重量、次数、RPE 已保存']);
+  stage='刷新并恢复训练';
   await loadFrame();w=frame.contentWindow;w.alert=()=>{};
   d=JSON.parse(localStorage.getItem(KEY)||'{}');
   checks.push(['训练中刷新恢复',!!(d.activeSession&&d.activeSession.sets&&d.activeSession.sets.length===1)&&w.document.getElementById('activeLog').style.display!=='none','未完成训练与已记录组数恢复']);
   checks.push(['预选动作刷新保留',w.__trainingBookTest.getActive().plan.items[0][0]==='臀桥'&&d.activeSession.planSnapshot.items[0][0]==='臀桥','刷新后仍保留本次自选动作']);
+  stage='测试休息计时器';
   w.timerSet(2);w.timerStart();await wait(2400);
   checks.push(['休息计时器',w.document.getElementById('timerDisplay').textContent==='00:00','2 秒倒计时已完成']);
+  stage='结束训练并写入历史';
   w.finishSession();await wait(200);
   d=JSON.parse(localStorage.getItem(KEY)||'{}');
   checks.push(['结束训练与历史写入',!!(d.logs&&d.logs.length===1&&d.sessions&&d.sessions.length===1),'训练组数和训练总结已写入']);
@@ -69,6 +79,7 @@ document.getElementById('run').onclick=async()=>{
   d=JSON.parse(localStorage.getItem(KEY)||'{}');
   checks.push(['刷新后数据保留',!!(d.logs&&d.logs.length===1&&d.sessions&&d.sessions.length===1),'刷新后仍可读取历史记录']);
   checks.push(['正式数据隔离',localStorage.getItem('trainingBook_v3')===productionBefore,'正式数据与测试数据完全隔离']);
+  stage='测试动作记忆与偏好筛选';
   w.openPrestartPlan('A');await wait(50);
   w.setExercisePreference('臀桥','like');await wait(50);
   checks.push(['个人偏好评价',w.__trainingBookTest.getDb().exerciseMemory['臀桥'].preference==='like','喜欢/一般/不喜欢评价可保存']);
@@ -76,6 +87,7 @@ document.getElementById('run').onclick=async()=>{
   checks.push(['按偏好筛选',w.prestartOptions(w.__trainingBookTest.getDraft()[0]).includes('臀桥'),'喜欢的动作可在偏好筛选中找到']);
   w.closeModal();
   // V16 动作教学验收：检查四套计划中的主动作教学及替代动作视频入口
+  stage='检查主动作及替代动作视频入口';
   let teachingOk=true,teachingCount=0,alternativeCount=0;
   for(const pid of ['A','B','C','D']){
    w.showPlan(pid);await wait(80);
@@ -94,6 +106,7 @@ document.getElementById('run').onclick=async()=>{
   checks.push(['V16 主动作国内视频入口',teachingOk,teachingCount+'个主动作均有B站教学入口']);
   checks.push(['V16 替代动作教学入口',teachingOk&&alternativeCount>=teachingCount*2,alternativeCount+'个替代动作均配置B站演示入口']);
   // V16.2：替代动作必须直接内嵌 B 站播放器，不再要求用户筛选搜索结果
+  stage='检查替代动作内嵌播放器';
   let embeddedAlternatives=true,embeddedCount=0;
   for(const pid of ['A','B','C','D']){
    w.showPlan(pid);await wait(80);
@@ -110,7 +123,7 @@ document.getElementById('run').onclick=async()=>{
   checks.forEach(x=>line(x[0],x[1],x[2]));
   const n=checks.filter(x=>x[1]).length;
   line('总结果',n===checks.length,n+'/'+checks.length+' 项通过');
- }catch(e){line('自动验收运行',false,String(e))}
+ }catch(e){const detail=(e&&e.stack)?String(e.stack):String(e);line('失败阶段：'+stage,false,detail);}
  btn.disabled=false;
 };
 </script></body></html>
