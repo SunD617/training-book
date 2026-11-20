@@ -98,13 +98,14 @@ document.getElementById('run').onclick=async()=>{
     const alts=body.querySelectorAll('.v16-alt-card');
     const video=body.querySelector('.v16-video-wrap,.v16-video-fallback');
     const hasDomesticLinks=[...body.querySelectorAll('a[href*="bilibili.com"]')].length>=1;
-    if(!video||alts.length<2||!hasDomesticLinks)teachingOk=false;
+    const embeddedMain=!!body.querySelector('.v16-video-wrap .video-frame iframe[src*="player.bilibili.com/player.html?bvid="]');
+    if(!embeddedMain||alts.length<2||!hasDomesticLinks)teachingOk=false;
     teachingCount++;alternativeCount+=alts.length;
    }
   }
   w.closeModal();
-  checks.push(['V16 主动作国内视频入口',teachingOk,teachingCount+'个主动作均有B站教学入口']);
-  checks.push(['V16 替代动作教学入口',teachingOk&&alternativeCount>=teachingCount*2,alternativeCount+'个替代动作均配置B站演示入口']);
+  checks.push(['V16.3 主动作国内视频内嵌检查',teachingOk,teachingCount+'个主动作均有具体B站内嵌播放器']);
+  checks.push(['V16.3 替代动作教学入口',teachingOk&&alternativeCount>=teachingCount*2,alternativeCount+'个替代动作均配置B站演示入口']);
   // V16.2：替代动作必须直接内嵌 B 站播放器，不再要求用户筛选搜索结果
   stage='检查替代动作内嵌播放器';
   let embeddedAlternatives=true,embeddedCount=0;
@@ -119,7 +120,7 @@ document.getElementById('run').onclick=async()=>{
    }
   }
   w.closeModal();
-  checks.push(['V16.2 替代动作直接内嵌视频',embeddedAlternatives,embeddedCount+'个替代动作卡片均包含B站播放器']);
+  checks.push(['V16.3 替代动作直接内嵌视频',embeddedAlternatives,embeddedCount+'个替代动作卡片均包含B站播放器']);
   checks.forEach(x=>line(x[0],x[1],x[2]));
   const n=checks.filter(x=>x[1]).length;
   line('总结果',n===checks.length,n+'/'+checks.length+' 项通过');
