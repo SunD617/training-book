@@ -41,9 +41,9 @@ document.getElementById('run').onclick=async()=>{
   w.startPlan('A');await wait(100);
   checks.push(['训练前动作确认',w.document.getElementById('modal').classList.contains('show')&&w.document.getElementById('modalTitle').textContent.includes('训练前动作确认'),'开始训练前先确认动作']);
   w.setPrestartExercise(0,'臀桥');await wait(50);
-  checks.push(['替代动作预选',w.prestartDraft[0].exercise==='臀桥','本次训练动作已替换，原计划不变']);
+  checks.push(['替代动作预选',w.__trainingBookTest.getDraft()[0].exercise==='臀桥','本次训练动作已替换，原计划不变']);
   w.confirmStartPlan();await wait(150);
-  checks.push(['确认后开始训练',w.document.getElementById('activeLog').style.display!=='none'&&w.active.plan.items[0][0]==='臀桥','训练记录面板使用预选动作']);
+  checks.push(['确认后开始训练',w.document.getElementById('activeLog').style.display!=='none'&&w.__trainingBookTest.getActive().plan.items[0][0]==='臀桥','训练记录面板使用预选动作']);
   w.document.getElementById('kg-0-0').value='10';
   w.document.getElementById('reps-0-0').value='10';
   w.document.getElementById('rpe-0-0').value='7';
@@ -53,7 +53,7 @@ document.getElementById('run').onclick=async()=>{
   await loadFrame();w=frame.contentWindow;w.alert=()=>{};
   d=JSON.parse(localStorage.getItem(KEY)||'{}');
   checks.push(['训练中刷新恢复',!!(d.activeSession&&d.activeSession.sets&&d.activeSession.sets.length===1)&&w.document.getElementById('activeLog').style.display!=='none','未完成训练与已记录组数恢复']);
-  checks.push(['预选动作刷新保留',w.active.plan.items[0][0]==='臀桥'&&d.activeSession.planSnapshot.items[0][0]==='臀桥','刷新后仍保留本次自选动作']);
+  checks.push(['预选动作刷新保留',w.__trainingBookTest.getActive().plan.items[0][0]==='臀桥'&&d.activeSession.planSnapshot.items[0][0]==='臀桥','刷新后仍保留本次自选动作']);
   w.timerSet(2);w.timerStart();await wait(2400);
   checks.push(['休息计时器',w.document.getElementById('timerDisplay').textContent==='00:00','2 秒倒计时已完成']);
   w.finishSession();await wait(200);
@@ -66,9 +66,9 @@ document.getElementById('run').onclick=async()=>{
   checks.push(['正式数据隔离',localStorage.getItem('trainingBook_v3')===productionBefore,'正式数据与测试数据完全隔离']);
   w.openPrestartPlan('A');await wait(50);
   w.setExercisePreference('臀桥','like');await wait(50);
-  checks.push(['个人偏好评价',w.db.exerciseMemory['臀桥'].preference==='like','喜欢/一般/不喜欢评价可保存']);
+  checks.push(['个人偏好评价',w.__trainingBookTest.getDb().exerciseMemory['臀桥'].preference==='like','喜欢/一般/不喜欢评价可保存']);
   w.setPrestartFilter('liked');await wait(30);
-  checks.push(['按偏好筛选',w.prestartOptions(w.prestartDraft[0]).includes('臀桥'),'喜欢的动作可在偏好筛选中找到']);
+  checks.push(['按偏好筛选',w.prestartOptions(w.__trainingBookTest.getDraft()[0]).includes('臀桥'),'喜欢的动作可在偏好筛选中找到']);
   w.closeModal();
   // V16 动作教学验收：检查四套计划中的主动作教学及替代动作视频入口
   let teachingOk=true,teachingCount=0,alternativeCount=0;
