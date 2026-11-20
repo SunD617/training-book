@@ -68,8 +68,17 @@ document.getElementById('run').onclick=async()=>{
   checks.push(['训练中刷新恢复',!!(d.activeSession&&d.activeSession.sets&&d.activeSession.sets.length===1)&&w.document.getElementById('activeLog').style.display!=='none','未完成训练与已记录组数恢复']);
   checks.push(['预选动作刷新保留',w.__trainingBookTest.getActive().plan.items[0][0]==='臀桥'&&d.activeSession.planSnapshot.items[0][0]==='臀桥','刷新后仍保留本次自选动作']);
   stage='测试休息计时器';
-  w.timerSet(2);w.timerStart();await wait(2400);
-  checks.push(['休息计时器',w.document.getElementById('timerDisplay').textContent==='00:00','2 秒倒计时已完成']);
+  // 使用可控时钟验证倒计时状态机，避免隐藏 iframe 的后台节流造成误报。
+  const nativeSetInterval=w.setInterval,nativeClearInterval=w.clearInterval;
+  let timerTick=null,timerCleared=false;
+  w.setInterval=(fn)=>{timerTick=fn;return 987654};
+  w.clearInterval=(id)=>{if(id===987654)timerCleared=true};
+  w.timerSet(2);w.timerStart();
+  const timerStarted=w.document.getElementById('timerDisplay').textContent==='00:02';
+  if(timerTick){timerTick();timerTick()}
+  const timerFinished=w.document.getElementById('timerDisplay').textContent==='00:00'&&timerCleared;
+  w.setInterval=nativeSetInterval;w.clearInterval=nativeClearInterval;
+  checks.push(['休息计时器',timerStarted&&timerFinished,'模拟推进2秒，显示归零且计时器停止']);
   stage='结束训练并写入历史';
   w.finishSession();await wait(200);
   d=JSON.parse(localStorage.getItem(KEY)||'{}');
