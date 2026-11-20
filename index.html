@@ -1171,6 +1171,18 @@ document.getElementById('dateLabel').textContent=new Date().toLocaleDateString('
 setInterval(checkReminders,15000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkReminders()});
 
+/* 测试专用桥接：仅在 ?mode=test 时暴露内部状态，不影响正式用户数据。 */
+if(TEST_MODE){
+ window.__trainingBookTest={
+  getState:()=>({db,active,prestartDraft,prestartPlanId,prestartFilter,remain}),
+  getActive:()=>active,
+  getDraft:()=>prestartDraft,
+  getDb:()=>db,
+  getPrestartDraft:()=>prestartDraft
+ };
+}
+
+
 </script>
 
 <script>
