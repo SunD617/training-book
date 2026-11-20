@@ -32,6 +32,10 @@ document.getElementById('run').onclick=async()=>{
   let w=await loadFrame();
   w.alert=()=>{};w.confirm=()=>true;
   const checks=[];
+  // 测试环境明确完成训练启用确认；仅修改隔离的 trainingBook_v3_test。
+  w.__trainingBookTest.getDb().allowed=true;
+  localStorage.setItem(KEY,JSON.stringify(w.__trainingBookTest.getDb()));
+  checks.push(['测试环境训练授权',w.__trainingBookTest.getDb().allowed===true,'仅对隔离测试数据生效']);
   checks.push(['本地日期格式',w.formatLocalDate(new Date(2026,0,2,0,30))==='2026-01-02','按设备本地年月日计算，不使用UTC日期']);
   checks.push(['本地日期跨日边界',w.formatLocalDate(new Date(2026,0,1,23,59))==='2026-01-01'&&w.formatLocalDate(new Date(2026,0,2,0,1))==='2026-01-02','午夜前后日期不串日']);
   const validBackup={plans:[{id:'T',day:1,items:[['测试动作',1,'8','60秒']]}],logs:[],measures:[]};
@@ -40,6 +44,7 @@ document.getElementById('run').onclick=async()=>{
   checks.push(['测试环境隔离',!!JSON.parse(localStorage.getItem(KEY)||'null'),'测试数据空间已创建']);
   w.startPlan('A');await wait(100);
   checks.push(['训练前动作确认',w.document.getElementById('modal').classList.contains('show')&&w.document.getElementById('modalTitle').textContent.includes('训练前动作确认'),'开始训练前先确认动作']);
+  if(!w.document.getElementById('modal').classList.contains('show'))throw new Error('训练前确认弹窗未打开：请检查测试授权或训练计划初始化');
   w.setPrestartExercise(0,'臀桥');await wait(50);
   checks.push(['替代动作预选',w.__trainingBookTest.getDraft()[0].exercise==='臀桥','本次训练动作已替换，原计划不变']);
   w.confirmStartPlan();await wait(150);
