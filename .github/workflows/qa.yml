@@ -1,0 +1,86 @@
+name: Training Book QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'qa.html'
+      - 'sw.js'
+      - 'manifest.webmanifest'
+      - '.github/workflows/qa.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'qa.html'
+      - 'sw.js'
+      - 'manifest.webmanifest'
+      - '.github/workflows/qa.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: training-book-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Start local web server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/training-book-http.log 2>&1 &
+          echo $! >/tmp/training-book-http.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/qa.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/training-book-http.log
+          exit 1
+
+      - name: Run isolated browser acceptance tests
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage();
+            page.setDefaultTimeout(15000);
+            try {
+              await page.goto('http://127.0.0.1:4173/qa.html', { waitUntil: 'domcontentloaded' });
+              await page.locator('#run').click();
+              await page.waitForFunction(() => {
+                const rows = [...document.querySelectorAll('.row')];
+                return rows.some(row => row.textContent.includes('总结果'));
+              }, { timeout: 180000 });
+              const rows = await page.locator('.row').allTextContents();
+              const summary = rows.find(row => row.includes('总结果')) || '';
+              console.log(rows.join('\n'));
+              const match = summary.match(/(\d+)\/(\d+) 项通过/);
+              if (!match || match[1] !== match[2]) {
+                throw new Error('QA acceptance failed: ' + (summary || 'no summary row'));
+              }
+            } finally {
+              await browser.close();
+            }
+          })().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
