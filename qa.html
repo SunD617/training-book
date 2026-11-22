@@ -83,6 +83,14 @@ document.getElementById('run').onclick=async()=>{
   w.finishSession();await wait(200);
   d=JSON.parse(localStorage.getItem(KEY)||'{}');
   checks.push(['结束训练与历史写入',!!(d.logs&&d.logs.length===1&&d.sessions&&d.sessions.length===1),'训练组数和训练总结已写入']);
+  stage='检查训练表现分析';
+  w.showLifePanel('data');await wait(80);
+  const analysisStats=w.document.getElementById('trainingAnalysisStats');
+  const weeklyRows=w.document.querySelectorAll('#weeklyTrainingVolume .listrow');
+  const exerciseRows=w.document.querySelectorAll('#exerciseProgressList .listrow');
+  checks.push(['训练分析统计卡片',!!(analysisStats&&analysisStats.textContent.includes('训练容量')&&analysisStats.textContent.includes('完成组数')),'训练次数、天数、容量、组数与RPE可显示']);
+  checks.push(['最近8周训练容量',weeklyRows.length===8,'按自然周展示8周训练容量']);
+  checks.push(['动作表现历史',exerciseRows.length>=1&&w.document.getElementById('exerciseProgressList').textContent.includes('臀桥'),'可查看最近训练动作及重量次数记录']);
   checks.push(['个人动作记忆',!!(d.exerciseMemory&&d.exerciseMemory['臀桥']&&d.exerciseMemory['臀桥'].status==='tried'&&d.exerciseMemory['臀桥'].timesUsed===1),'首次训练后自动记录为已体验']);
   await loadFrame();w=frame.contentWindow;w.alert=()=>{};
   d=JSON.parse(localStorage.getItem(KEY)||'{}');
