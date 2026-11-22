@@ -1,4 +1,4 @@
-# 训练簿 V16.4.2 · 国内动作教学、动作记忆与数据保护版
+# 训练簿 V16.4.3 · 在线 PWA 与自动验收版
 
 ## 目录
 - `index.html`：主应用
@@ -60,3 +60,11 @@ B 站官方外链播放器使用 `https://player.bilibili.com/player.html?bvid=.
 - 替代动作继续逐卡检查内嵌播放器。
 - Service Worker 缓存版本升级为 trainingbook-pwa-v16.4.2。
 - 视频链接已按公开页面检索匹配；实际播放仍需在用户设备浏览器中逐条验证，不能仅凭 iframe 存在判定可播放。
+
+
+## V16.4.3 更新说明
+- 正式版固定使用 GitHub Pages HTTPS 地址；后续代码提交由 Pages 自动发布。
+- 新增 GitHub Actions 浏览器自动验收：主程序、QA 页面、PWA 配置等相关文件变更时，在 main 推送和 Pull Request 中运行隔离测试。
+- 自动验收通过后才可将该次代码变更视为通过 QA；Pages 发布成功与浏览器 QA 结果分别显示。
+- QA 使用独立测试存储键 `trainingBook_v3_test`，不读取或覆盖正式训练数据。
+- 正式数据仍保存在当前设备浏览器本地；本次更新不提供跨设备云同步。
