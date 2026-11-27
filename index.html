@@ -197,7 +197,7 @@ canvas{width:100%;height:160px}
 <body>
 <div class="app">
 <header><div class="logo">训练簿<small>TRAIN & LIFE</small></div><div class="date" id="dateLabel"></div></header>
-<div class="pwa-status"><span><b>训练簿</b> · <small id="appVersionLabel">V16 国内动作教学与替代动作版</small></span><span id="updateStatus">版本检查中…</span></div>
+<div class="pwa-status"><span><b>训练簿</b> · <small id="appVersionLabel">V16.5.1</small></span><span id="updateStatus">版本检查中…</span></div>
 <div class="test-mode-banner" id="testModeBanner">测试环境：所有记录与正式训练簿隔离，清理测试数据不会影响正式数据。</div>
 
 
@@ -294,7 +294,7 @@ canvas{width:100%;height:160px}
   <button class="btn light grow" onclick="showLifePanel('data')">身体数据</button>
  </div>
  <div id="foodPanel">
- <div class="warn">你的饮食目标是整体增肌与恢复，不做减脂餐、不依赖昂贵补剂。由于你此前报告过黑便、反复腹泻和头晕，以下只是一般家常饮食框架，不是治疗方案；请先完成医疗评估，确认消化状况及营养需求。</div>
+ <div class="warn">以下是支持日常训练与恢复的家常饮食示例，不是治疗方案。请按个人需要调整；如有持续不适或特殊营养需求，请咨询医生或营养师。</div>
  <div class="card">
   <div class="row between"><h2>每日饮食框架</h2><span class="pill">可按胃口调整</span></div><div class="notice" style="margin:10px 0">省钱原则：优先鸡蛋、豆腐、豆浆、鸡肉、当季蔬菜和米面；一次采购、简单备餐，不需要蛋白粉或昂贵健身食品。</div>
   <div class="listrow"><b>早餐</b><div class="sub">主食 + 蛋白质 + 水果或蔬菜</div><div class="tiny muted">例如：鸡蛋＋馒头/面包＋豆浆；按胃肠耐受选择</div></div>
@@ -328,7 +328,7 @@ canvas{width:100%;height:160px}
   <div class="analysis-stats" id="foodAnalysisStats"></div>
   <div id="foodAnalysisDetails"></div>
  </div>
- <div class="notice">这是一份普通家常饮食规划，不是腹泻或消化道疾病的治疗饮食。鉴于你此前报告近期黑便及长期腹泻，请尽快就医评估；在医生评估前不进行高蛋白增肌饮食、热量盈余或强制加餐。</div>
+ <div class="notice">请按平时的饮食习惯如实记录。这份家常饮食计划不用于治疗疾病，也不要求强制加餐或增加食量。</div>
   <h2>今日饮食记录</h2>
   <label>日期</label><input type="date" id="foodDate">
   <label>早餐</label><textarea id="foodBreakfast" placeholder="吃了什么、大概份量"></textarea>
@@ -345,11 +345,11 @@ canvas{width:100%;height:160px}
  <div><h1>作息</h1><div class="sub">先保证足够且规律的睡眠，再观察白天精力；不为了早起而压缩睡眠。</div></div>
  <div class="card">
   <h2>建议日程</h2>
-  <div class="listrow"><b>起床</b><span style="float:right;color:var(--green)">固定时间</span><div class="sub">先按目前08:30左右起床，保持相对固定；醒后观察是否仍明显困倦。</div></div>
+  <div class="listrow"><b>起床</b><span style="float:right;color:var(--green)">固定时间</span><div class="sub">选择适合自己日程的起床时间，尽量保持规律；起床后可以记录精神状态。</div></div>
   <div class="listrow"><b>早餐</b><span style="float:right;color:var(--green)">起床后1–2小时内</span><div class="sub">尽量不要长期空腹。</div></div>
   <div class="listrow"><b>午餐 / 晚餐</b><span style="float:right;color:var(--green)">规律安排</span><div class="sub">尽量固定用餐时间，避免暴饮暴食。</div></div>
   <div class="listrow"><b>睡前放松</b><span style="float:right;color:var(--green)">睡前30–60分钟</span><div class="sub">减少强光和高刺激内容，给自己留出放松时间。</div></div>
-  <div class="listrow"><b>睡眠</b><span style="float:right;color:var(--green)">先维持约9.5小时</span><div class="sub">你目前约23:00入睡、08:30起床，约9.5小时。先不强行缩短睡眠；连续记录睡眠时长和醒后精神状态。如果睡够仍长期困倦，应就医评估，而不是靠咖啡或加练硬扛。</div></div>
+  <div class="listrow"><b>睡眠</b><span style="float:right;color:var(--green)">保持规律、睡够</span><div class="sub">按自己的作息安排睡眠，记录睡眠时长和醒后的精神状态。</div></div>
  </div>
  <div class="card">
   <h2>今日作息打卡</h2>
@@ -516,7 +516,7 @@ function renderDailyAgenda(){
   {id:'training',time:'按计划',title:'训练 / 恢复',desc:'训练功能暂待健康评估许可；今天可按恢复安排执行',action:`setAgendaDone('training')`,btn:'查看安排'},
   {id:'dinner',time:dinner?dinner.time:'训练后',title:'晚餐',desc:dinner?'训练结束后生成 · 记录实际晚餐':'训练结束后自动生成晚餐任务；未训练日可自行记录晚餐',dinner:true},
   {id:'winddown',time:'22:00',title:'睡前准备',desc:'放松、减少屏幕刺激',action:`setAgendaDone('winddown')`,btn:'标记完成'},
-  {id:'bed',time:'23:00',title:'睡觉',desc:'保持目前睡眠窗口，不刻意压缩睡眠',action:`setAgendaDone('bed')`,btn:'准备休息'}
+  {id:'bed',time:'23:00',title:'睡觉',desc:'按自己的作息留出充足睡眠时间',action:`setAgendaDone('bed')`,btn:'准备休息'}
  ];
  const countable=items.filter(x=>x.id!=='snack'&&x.id!=='training'&&x.id!=='dinner');
  const count=countable.filter(x=>done[x.id]||(x.id==='dinner'&&dinner&&dinner.done)).length;
